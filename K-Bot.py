@@ -158,6 +158,8 @@ def calculateAwesome(voteType=None, voterUid=None):
 
     if len(theBopList[curSongID]) == len(theUsersList):
         bot.speak('With all {} people jamming, maybe we should turn up the lights'.format(str(len(theBopList[curSongID]))))
+        # If we have a song that everyone likes, then let's become a fan of the current DJ
+        bot.becomeFan(curDjID)
 
 
 def updateVotes(data):
