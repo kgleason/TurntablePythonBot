@@ -2,10 +2,19 @@ from ttapi import Bot
 from pprint import pprint
 from time import sleep
 from collections import deque
+from myConfig import *
 import json
-myUserID = '517aeb2baaa5cd0177339e81'
-ownerID =  '513101bbaaa5cd316ba3a24e'
-bot = Bot('rTQTtZTmpPzzeQWbooUNspgw', myUserID, '516802feaaa5cd0a793a1353')
+
+# There should be a file in the same directory as the bot
+# that is named myConfig.py. This file shold contain some
+# variables that we need to connect to tt.fm
+# For example:
+# myUserID      = 'XXXXXX'
+# myAuthKet     = 'XXXXXX'
+# defaultRoom   = 'XXXXXX'
+# ownerID       = 'XXXXXX'
+
+bot = Bot(myAuthKey, myUserID, defaultRoom)
 
 
 # Todo: Enforce the DJ queue
@@ -160,7 +169,6 @@ def updateVotes(data):
     voteType = voteLog[1]
     print 'Someone has voted.',        data
     calculateAwesome(voteType, voterUid)
-    #bot.roomInfo(roomInfo)
 
 
 def registered(data):  
@@ -212,21 +220,15 @@ def newSong(data):
 
 def djSteppedUp(data):
     global roomDJs
-    #print 'a DJ stepped up', data
-    
     user = data['user'][0]
     #print 'user:',user
-    
     name = user['name']
     #print 'name:',name
-
     userID = user['userid']
     #print 'userID',userID
-
     roomDJs = data['djs']
     #print 'DJs:', roomDJs
     #print 'The new DJ is {}'.format(newDjID)
-
 
     # If we have a queue
     if djQueue:
@@ -237,12 +239,9 @@ def djSteppedUp(data):
         else:
             bot.speak('It would appear that {} took the DJ spot that was reserved for {}.'.format(name, djQueue[0]['name']))
 
-
 def djSteppedDown(data):
     global roomDJs
     roomDJs = data['djs']
-    print 'DJs:', roomDJs
-    print 'a DJ stepped down', data
 
     #If we haven't maxed out the DJ spots
     if len(roomDJs) < maxDjCount and djQueue:
@@ -260,6 +259,10 @@ def djEscorted(data):
 
 def endSong(data):
     print 'endsong:'#, data
+    userID = data['room']['metadata']['current_song']['djid']
+    name = data['room']['metadata']['current_song']['djname']
+    if djQueue:
+        bot.speak('Since we have a DJ queue, it\'s time for {} to step down.'.format(name))
 
 def noSong(data):
     bot.addDj()
