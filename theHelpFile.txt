@@ -1,0 +1,9 @@
+Here is what I can do to help you.
+In the main room channel, the following commands are available:
+!hello : Have me say hello to you
+!suck it : See what happens if you offend me
+!user count : Get me to announce how many people are in here
+!help : Presumably you already figured this one out
+!queue list : Show the current DJ queue. Alias: !ql
+!queue add : Get yourself added to the queue. Aliases: !q+ or !add
+!status : Get your current status.
