@@ -11,6 +11,7 @@ bot = Bot('rTQTtZTmpPzzeQWbooUNspgw', myUserID, '516802feaaa5cd0a793a1353')
 # Todo: Implement a DJ queue
 # COmmand for the bot to reload the help files
 # Commannd to make the bot leave & re-enter the room
+# Make it more python-y: remove all of the 'if len(<list>) == 0:' and replace with 'if <list>:'
 
 
 # Define callbacks
@@ -55,17 +56,19 @@ def roomChanged(data):
     bot.modifyLaptop('linux')
     print 'The bot has changed room.', roomInfo['created']
 
-    if len(roomDJs) == 0:
+    if not roomDJs:
         bot.addDj()
     
 def roomInfo(data):
     global roomDJs
+    global curDjID
+    global curSongID
     roomInfo = data['room']
     roomMeta = roomInfo['metadata']
     curDjID = roomMeta['current_dj']
     songLog = roomMeta['songlog']
     curSongID = songLog[0]['_id']
-    roomMods = roomMeta['moderator_id']
+    #roomMods = roomMeta['moderator_id']
     roomDJs = roomMeta['djs']
 
 def speak(data):
@@ -77,7 +80,8 @@ def speak(data):
     #print 'Debug:', data
     print '{} just said {}'.format(name, text)
 
-    bot.roomInfo(roomInfo)
+    #Don't think I need this now that I've added in the DJ events.
+    #bot.roomInfo(roomInfo)
 
     #print 'Got some room info:', roomInfo
 
@@ -100,13 +104,38 @@ def speak(data):
             bot.pm('You, {}, are a valued member of this room'.format(name),userID)
 
     if text == '!ql':
-        bot.speak('There are currently {} people in the DJ queue'.format(len(djQueue)))
-        if len(roomDJs) < 5:
-            print 'RoomDJs:', roomDJs
-            # Putting a little delay in here to make sure that the messages come through in order
-            # and to ensure that the roomInfo() call has had time to full process
-            sleep(1)
-            bot.speak('In fact there are {} empty DJ spots right now!'.format(5-len(roomDJs)))
+        checkDjQueue()
+
+    if text == '!q+':
+        addToDJQueue(userID=userID,name=name)
+
+def checkDjQueue():
+    if len(djQueue) == 0 or djQueue == None:
+        bot.speak('The DJ queue is currently empty')
+    else:
+        queueMsg = ''
+        queuePos = 0
+        for dj in djQueue:
+            queueMsg += '[{}]::{}'.format(queuePos+1,djQueue[queuePos]['name'])
+            queuePos += 1
+        bot.speak('Here is the current DJ queue: {}'.format(queueMsg))
+    #if len(roomDJs) < 5:
+        #print 'RoomDJs:', roomDJs
+        # Putting a little delay in here to make sure that the messages come through in order
+        # and to ensure that the roomInfo() call has had time to full process
+        #sleep(0.5)
+        #bot.speak('In fact there are {} empty DJ spots right now!'.format(5-len(roomDJs)))
+    
+def addToDJQueue(userID, name):
+    #Normally this should be set to 5, but for testing, we are going to set it to 1
+    print roomDJs
+    if len(roomDJs) == maxDjCount:
+        djQueue.append({'userID':userID,'name':name})
+        #Need to figure out the position in the deque object
+        bot.speak('Added {} to the DJ queue'.format(name))
+        print 'djQueue:', djQueue
+    else:
+        checkDjQueue()
 
 
 
@@ -146,7 +175,7 @@ def updateVotes(data):
     voteType = voteLog[1]
     print 'Someone has voted.',        data
     calculateAwesome(voteType, voterUid)
-    bot.roomInfo(roomInfo)
+    #bot.roomInfo(roomInfo)
 
 
 def registered(data):  
@@ -156,7 +185,7 @@ def registered(data):
     #print 'Someone registered.',       data
     bot.speak('Hello @{}. I\'m the WalMart greeter of this room. Type !help to see what I can do'.format(user['name']))
     calculateAwesome()
-    bot.roomInfo(roomInfo)
+    #bot.roomInfo(roomInfo)
 
 def deregistered(data):
     global theUsersList
@@ -165,7 +194,19 @@ def deregistered(data):
     #print 'Someone deregistered', data
     bot.speak('Bummer that {} left.'.format(user['name']))
     calculateAwesome()
-    bot.roomInfo(roomInfo)
+    if djQueue:
+        djInfo = {'userID':user['userid'], 'name':user['name']}
+        print djInfo
+        if djInfo in djQueue:
+            djQueue.remove(djInfo)
+            print 'Removed {} from the djQueue'.format(djInfo)
+        else:
+            print '{} was not in the djQueue'.format(user['name'])
+    else:
+        print 'No djQueue'
+
+    
+    #bot.roomInfo(roomInfo)
 
    
 def newSong(data):
@@ -190,15 +231,42 @@ def newSong(data):
 
 def djSteppedUp(data):
     global roomDJs
+    #print 'a DJ stepped up', data
+    
+    user = data['user'][0]
+    #print 'user:',user
+    
+    name = user['name']
+    #print 'name:',name
+
+    userID = user['userid']
+    #print 'userID',userID
+
     roomDJs = data['djs']
-    print 'DJs:', roomDJs
-    print 'a DJ stepped up', data
+    #print 'DJs:', roomDJs
+    #print 'The new DJ is {}'.format(newDjID)
+
+
+    # If we have a queue
+    if djQueue:
+        # If the new DJ was first in the queue
+        if userID == djQueue[0]['userID']:
+            djQueue.popleft()
+            print djQueue
+        else:
+            bot.speak('It would appear that {} took the DJ spot that was reserved for {}.'.format(name, djQueue[0]['name']))
+
 
 def djSteppedDown(data):
     global roomDJs
     roomDJs = data['djs']
     print 'DJs:', roomDJs
     print 'a DJ stepped down', data
+
+    #If we haven't maxed out the DJ spots
+    if len(roomDJs) < maxDjCount and djQueue:
+        bot.speak('A DJ spot has opened up. {} is next in line.'.format(djQueue[0]['name']))
+
 
 def djEscorted(data):
     global roomDJs
@@ -214,7 +282,7 @@ def endSong(data):
 
 def noSong(data):
     bot.addDj()
-    print 'nosong:', data
+    #print 'nosong:', data
 
 def PlaylistToPM(data):
     print 'playlist:', data
@@ -284,6 +352,7 @@ def initializeVars():
     global theOpList
     global djQueue
     global roomDJs
+    global maxDjCount
     with open('theHelpFile.txt','r') as helpFile:
         helpMsg = helpFile.readlines()
     with open('theOpHelpFile.txt','r') as opHelpFile:
@@ -313,6 +382,7 @@ def initializeVars():
     #Initialize the DJ Queue
     djQueue = deque([])
     roomDJs = []
+    maxDjCount = 1
 
 
 
