@@ -339,21 +339,31 @@ def initializeVars():
     global djQueue
     global roomDJs
     global maxDjCount
-    with open('theHelpFile.txt','r') as helpFile:
-        helpMsg = helpFile.readlines()
-    with open('theOpHelpFile.txt','r') as opHelpFile:
-        opHelpMsg = opHelpFile.readlines()
+
+    try:
+        with open('theHelpFile.txt','r') as helpFile:
+            helpMsg = helpFile.readlines()
+    except IOError:
+        print 'The file theHelpFile.txt was not found. Help may not work.'
+
+    try:
+        with open('theOpHelpFile.txt','r') as opHelpFile:
+            opHelpMsg = opHelpFile.readlines()
+    except IOError:
+        print 'The file theOpHelpFile.txt was not found. Help may not work'
 
     #empty out the op list
     theOpList = {}
 
     #Initialize the op list
-    with open('theOpList.json','r') as f:
-        theOpList = json.load(f)
-    if not theOpList:
+    try:
+        with open('theOpList.json','r') as f:
+            theOpList = json.load(f)
+    expect IOError:
+    #if not theOpList:
         print 'Loading the default Op List'
         theOpList = {ownerID:0}
-        print 'Success'
+        #print 'Success'
 
     # Reset the users list
     theUsersList = {}
