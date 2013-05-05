@@ -359,7 +359,7 @@ def initializeVars():
     try:
         with open('theOpList.json','r') as f:
             theOpList = json.load(f)
-    expect IOError:
+    except IOError:
     #if not theOpList:
         print 'Loading the default Op List'
         theOpList = {ownerID:0}
