@@ -8,10 +8,9 @@ ownerID =  '513101bbaaa5cd316ba3a24e'
 bot = Bot('rTQTtZTmpPzzeQWbooUNspgw', myUserID, '516802feaaa5cd0a793a1353')
 
 
-# Todo: Implement a DJ queue
-# COmmand for the bot to reload the help files
+# Todo: Enforce the DJ queue
+# Command for the bot to reload the help files
 # Commannd to make the bot leave & re-enter the room
-# Make it more python-y: remove all of the 'if len(<list>) == 0:' and replace with 'if <list>:'
 
 
 # Define callbacks
@@ -80,11 +79,6 @@ def speak(data):
     #print 'Debug:', data
     print '{} just said {}'.format(name, text)
 
-    #Don't think I need this now that I've added in the DJ events.
-    #bot.roomInfo(roomInfo)
-
-    #print 'Got some room info:', roomInfo
-
     if text == '!hello':
         bot.speak('Hey! How are you {}?'.format(name))
 
@@ -103,14 +97,14 @@ def speak(data):
         else:
             bot.pm('You, {}, are a valued member of this room'.format(name),userID)
 
-    if text == '!ql':
+    if text == '!ql' or text == '!queue list':
         checkDjQueue()
 
-    if text == '!q+':
+    if text == '!q+' or text == '!add' or text == '!queue add':
         addToDJQueue(userID=userID,name=name)
 
 def checkDjQueue():
-    if len(djQueue) == 0 or djQueue == None:
+    if not djQueue or djQueue == None:
         bot.speak('The DJ queue is currently empty')
     else:
         queueMsg = ''
@@ -119,12 +113,7 @@ def checkDjQueue():
             queueMsg += '[{}]::{}'.format(queuePos+1,djQueue[queuePos]['name'])
             queuePos += 1
         bot.speak('Here is the current DJ queue: {}'.format(queueMsg))
-    #if len(roomDJs) < 5:
-        #print 'RoomDJs:', roomDJs
-        # Putting a little delay in here to make sure that the messages come through in order
-        # and to ensure that the roomInfo() call has had time to full process
-        #sleep(0.5)
-        #bot.speak('In fact there are {} empty DJ spots right now!'.format(5-len(roomDJs)))
+
     
 def addToDJQueue(userID, name):
     #Normally this should be set to 5, but for testing, we are going to set it to 1
@@ -136,8 +125,6 @@ def addToDJQueue(userID, name):
         print 'djQueue:', djQueue
     else:
         checkDjQueue()
-
-
 
 def calculateAwesome(voteType=None, voterUid=None):
     # Debugging
@@ -204,11 +191,7 @@ def deregistered(data):
             print '{} was not in the djQueue'.format(user['name'])
     else:
         print 'No djQueue'
-
-    
-    #bot.roomInfo(roomInfo)
-
-   
+  
 def newSong(data):
     global curSongID
     global curDjID
@@ -364,7 +347,7 @@ def initializeVars():
     #Initialize the op list
     with open('theOpList.json','r') as f:
         theOpList = json.load(f)
-    if len(theOpList) == 0:
+    if not theOpList:
         print 'Loading the default Op List'
         theOpList = {ownerID:0}
         print 'Success'
