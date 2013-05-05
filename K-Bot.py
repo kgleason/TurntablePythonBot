@@ -10,8 +10,6 @@ bot = Bot('rTQTtZTmpPzzeQWbooUNspgw', myUserID, '516802feaaa5cd0a793a1353')
 
 # Todo: Enforce the DJ queue
 # Command for the bot to reload the help files
-# Commannd to make the bot leave & re-enter the room
-
 
 # Define callbacks
 def roomChanged(data): 
@@ -327,7 +325,7 @@ def giveHelp(userID):
             bot.pm(line.rstrip(),userID)
             sleep(0.5)
             #print line.rstrip()
-    
+
 def initializeVars():
     # Initialize some variables here, mostly things that we need from the get go
     global helpMsg
