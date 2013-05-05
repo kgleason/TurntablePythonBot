@@ -26,10 +26,11 @@ def roomChanged(data):
     songLog = roomMeta['songlog']
     curSongID = songLog[0]['_id']
     roomMods = roomMeta['moderator_id']
+    roomDJs = roomMeta['djs']
 
-    print 'curDjID: {}'.format(curDjID)
-    print 'curSongID: {}'.format(curSongID)
-    print 'roomMods: {}'.format(roomMods)
+    #print 'curDjID: {}'.format(curDjID)
+    #print 'curSongID: {}'.format(curSongID)
+    #print 'roomMods: {}'.format(roomMods)
 
     # Reset the users list
     theUsersList = {}
@@ -44,16 +45,28 @@ def roomChanged(data):
 
     #Run through the room mods. Just make every mod in the room an op
     for roomMod in roomMods:
-        print 'Checking to see if {} is an op'.format(roomMod)
+        #print 'Checking to see if {} is an op'.format(roomMod)
         if theOpList.get(roomMod) == None:
-            print '{} is not an op. Promoting'.format(roomMod)
+            #print '{} is not an op. Promoting'.format(roomMod)
             theOpList[roomMod] = 0
-        else:
-            print '{} is already an op. Moving on'.format(roomMod)
+        #else:
+            #print '{} is already an op. Moving on'.format(roomMod)
 
     bot.modifyLaptop('linux')
     print 'The bot has changed room.', roomInfo['created']
+
+    if len(roomDJs) == 0:
+        bot.addDj()
     
+def roomInfo(data):
+    global roomDJs
+    roomInfo = data['room']
+    roomMeta = roomInfo['metadata']
+    curDjID = roomMeta['current_dj']
+    songLog = roomMeta['songlog']
+    curSongID = songLog[0]['_id']
+    roomMods = roomMeta['moderator_id']
+    roomDJs = roomMeta['djs']
 
 def speak(data):
     name = data['name']
@@ -61,8 +74,12 @@ def speak(data):
     userID = data['userid']
 
     # This is a debugging line
-    print 'Debug:', data
+    #print 'Debug:', data
     print '{} just said {}'.format(name, text)
+
+    bot.roomInfo(roomInfo)
+
+    #print 'Got some room info:', roomInfo
 
     if text == '!hello':
         bot.speak('Hey! How are you {}?'.format(name))
@@ -84,6 +101,14 @@ def speak(data):
 
     if text == '!ql':
         bot.speak('There are currently {} people in the DJ queue'.format(len(djQueue)))
+        if len(roomDJs) < 5:
+            print 'RoomDJs:', roomDJs
+            # Putting a little delay in here to make sure that the messages come through in order
+            # and to ensure that the roomInfo() call has had time to full process
+            sleep(1)
+            bot.speak('In fact there are {} empty DJ spots right now!'.format(5-len(roomDJs)))
+
+
 
 def calculateAwesome(voteType=None, voterUid=None):
     # Debugging
@@ -121,6 +146,7 @@ def updateVotes(data):
     voteType = voteLog[1]
     print 'Someone has voted.',        data
     calculateAwesome(voteType, voterUid)
+    bot.roomInfo(roomInfo)
 
 
 def registered(data):  
@@ -130,6 +156,7 @@ def registered(data):
     #print 'Someone registered.',       data
     bot.speak('Hello @{}. I\'m the WalMart greeter of this room. Type !help to see what I can do'.format(user['name']))
     calculateAwesome()
+    bot.roomInfo(roomInfo)
 
 def deregistered(data):
     global theUsersList
@@ -138,6 +165,7 @@ def deregistered(data):
     #print 'Someone deregistered', data
     bot.speak('Bummer that {} left.'.format(user['name']))
     calculateAwesome()
+    bot.roomInfo(roomInfo)
 
    
 def newSong(data):
@@ -156,13 +184,36 @@ def newSong(data):
     #create the bopList key
     theBopList[curSongID] = []
 
+    bot.roomInfo(roomInfo)
+
     saveState()
 
+def djSteppedUp(data):
+    global roomDJs
+    roomDJs = data['djs']
+    print 'DJs:', roomDJs
+    print 'a DJ stepped up', data
+
+def djSteppedDown(data):
+    global roomDJs
+    roomDJs = data['djs']
+    print 'DJs:', roomDJs
+    print 'a DJ stepped down', data
+
+def djEscorted(data):
+    global roomDJs
+    escortedUser = data['user']
+    escortedUserID = escortedUser['userid']
+    print 'DJs:', roomDJs
+    print 'a DJ was escorted offstage', data
+    roomDJs.remove(escortedUserID)
+    print 'DJs:', roomDJs
 
 def endSong(data):
     print 'endsong:'#, data
 
 def noSong(data):
+    bot.addDj()
     print 'nosong:', data
 
 def PlaylistToPM(data):
@@ -232,6 +283,7 @@ def initializeVars():
     global opHelpMsg
     global theOpList
     global djQueue
+    global roomDJs
     with open('theHelpFile.txt','r') as helpFile:
         helpMsg = helpFile.readlines()
     with open('theOpHelpFile.txt','r') as opHelpFile:
@@ -260,6 +312,7 @@ def initializeVars():
 
     #Initialize the DJ Queue
     djQueue = deque([])
+    roomDJs = []
 
 
 
@@ -275,6 +328,9 @@ bot.on('newsong',       newSong)
 bot.on('endsong',       endSong)
 bot.on('nosong',        noSong)
 bot.on('pmmed',         privateMessage)
+bot.on('add_dj',        djSteppedUp)
+bot.on('rem_dj',        djSteppedDown)
+bot.on('escort',        djEscorted)
 
 
 # Start the bot
