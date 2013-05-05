@@ -1,7 +1,7 @@
 TurntablePythonBot
 ==================
 
-A Turntable.fm bot written in Python using [ttapi from alaingilbert](https://github.com/alaingilbert/Turntable-API)
+A [Turntable.fm](http://turntable.fm) bot written in Python using [ttapi from alaingilbert](https://github.com/alaingilbert/Turntable-API)
 
 I've seen a few different TT bots, and I wanted to take the opportunity to write my own and use some of what I've been learning as I've been learning Python.
 
