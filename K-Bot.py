@@ -241,6 +241,10 @@ def djSteppedUp(data):
         else:
             bot.speak('It would appear that {} took the DJ spot that was reserved for {}.'.format(name, djQueue[0]['name']))
 
+    # If I'm on stage, and there at least 2 other DJs, then I should step down
+    if len(roomDJs) >= 3 and myUserID in roomDJs:
+        bot.remDj(myUserID)
+
 def djSteppedDown(data):
     global roomDJs
     roomDJs = data['djs']
@@ -248,6 +252,10 @@ def djSteppedDown(data):
     #If we haven't maxed out the DJ spots
     if len(roomDJs) < maxDjCount and djQueue:
         bot.speak('A DJ spot has opened up. {} is next in line.'.format(djQueue[0]['name']))
+
+    #If we have 0 or 1 DJs, then step up
+    if len(roomDJs) <= 1:
+        bot.addDj()
 
 
 def djEscorted(data):
