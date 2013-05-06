@@ -149,7 +149,9 @@ def calculateAwesome(voteType=None, voterUid=None):
 
     #otherwise, we probably called this from a different place to see if we should change the bots voting behavior
 
-    if len(theBopList[curSongID]) == len(theUsersList)/2 and voteType == 'up':
+    # If the current song has received likes from half of the room
+    # Subtract 1 from the user list so that the bot doesn't count itself
+    if len(theBopList[curSongID]) == (len(theUsersList)-1)/2 and voteType == 'up':
         bot.vote('up')
         #bot.speak('This song is awesome')
 
@@ -239,6 +241,9 @@ def djSteppedUp(data):
             bot.speak('It would appear that {} took the DJ spot that was reserved for {}.'.format(name, djQueue[0]['name']))
 
     # If I'm on stage, and there at least 2 other DJs, then I should step down
+    # This needs debugging, and it needs to be made smarter. As it is, if the bot it issued a step up command from an op
+    # and there are more than 2 people on stage, it will immediately step down. Should probably be put into it's own method
+    # with a variable to track why it is on stage.
     if len(roomDJs) >= 3 and myUserID in roomDJs:
         bot.remDj(myUserID)
 
