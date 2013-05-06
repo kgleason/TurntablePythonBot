@@ -152,7 +152,7 @@ def calculateAwesome(voteType=None, voterUid=None):
 
     #otherwise, we probably called this from a different place to see if we should change the bots voting behavior
 
-    if len(theBopList[curSongID]) == len(theUsersList)/2:
+    if len(theBopList[curSongID]) == len(theUsersList)/2 and voteType == 'up':
         bot.vote('up')
         bot.speak('This song is awesome')
 
