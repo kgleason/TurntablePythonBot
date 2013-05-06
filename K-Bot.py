@@ -141,10 +141,7 @@ def calculateAwesome(voteType=None, voterUid=None):
     #Here we got a vote event from a user, and need to process it
     if voteType == 'up':
         print 'Got an upvote'
-        if theBopList.has_key(curSongID):
-            print "Found the song id key for this song"
-        else:
-            print "Could not find the key for this song"
+        if not theBopList.has_key(curSongID):
             theBopList[curSongID] = []
         #print theBopList
         theBopList[curSongID].append(voterUid)
@@ -154,7 +151,7 @@ def calculateAwesome(voteType=None, voterUid=None):
 
     if len(theBopList[curSongID]) == len(theUsersList)/2 and voteType == 'up':
         bot.vote('up')
-        bot.speak('This song is awesome')
+        #bot.speak('This song is awesome')
 
     if len(theBopList[curSongID]) == len(theUsersList):
         #bot.speak('With all {} people jamming, maybe we should turn up the lights'.format(str(len(theBopList[curSongID]))))
