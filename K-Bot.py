@@ -35,6 +35,7 @@ def roomChanged(data):
     global curDjID
     global theOpList
     global maxDjCount
+    global roomDJs
     roomInfo = data['room']
     roomMeta = roomInfo['metadata']
     curDjID = roomMeta['current_dj']
@@ -70,7 +71,7 @@ def roomChanged(data):
     bot.modifyLaptop('linux')
     print 'The bot has changed room.'
     print 'The new room is {} and it allows {} max DJs'.format(roomInfo['name'],maxDjCount)
-    print 'There are currently {} DJs'.format(len(roomDJs))
+    print 'There are currently {} DJs'.format(roomDJs)
 
     if not roomDJs:
         bot.addDj()
@@ -283,7 +284,7 @@ def endSong(data):
     print 'endsong:'#, data
     userID = data['room']['metadata']['current_song']['djid']
     name = data['room']['metadata']['current_song']['djname']
-    print 'pos 0 in the DJ queue: {}'.format(roomDJs)
+    print 'pos 0 in the DJ queue: {}'.format(roomDJs[0])
     print 'TheUser List: {}'.format(theUsersList)
     if djQueue:
         bot.speak('Since we have a DJ queue, it\'s time for {} to step down.'.format(roomDJs[0]))
