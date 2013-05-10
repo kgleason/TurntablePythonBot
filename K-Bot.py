@@ -150,7 +150,7 @@ def checkDjQueue():
 def addToDJQueue(userID, name):
     #Normally this should be set to 5, but for testing, we are going to set it to 1
     print roomDJs
-    if len(roomDJs) == maxDjCount and not roomDJs.has_key(userID):
+    if len(roomDJs) == maxDjCount: # and not roomDJs.has_key(userID):
         djQueue.append({'userID':userID,'name':name})
         #Need to figure out the position in the deque object
         bot.speak('Added {} to the DJ queue'.format(name))
@@ -274,12 +274,13 @@ def djSteppedUp(data):
 
 def djSteppedDown(data):
     global roomDJs
+    print 'rem_dj:', data['djs']
     #roomDJs = data['djs']
 
     #Fill in the DJs
     pos = 0
     for dj in roomMeta['djs']:
-        roomDJs[pos] = dj
+        roomDJs[str(pos)] = dj
         pos += 1
 
     #If we haven't maxed out the DJ spots
