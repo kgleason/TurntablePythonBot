@@ -20,6 +20,10 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # Todo: Enforce the DJ queue
 # Command for the bot to reload the help files
 # Create a class for every global variable that we have
+# When there is a queue, remind the 1st DJ (not the finishing DJ) that it is time to step down
+# Add in a timer for the next DJ to step up. Remove any suqatters.
+# Put a space after the :: when listing out the DJ queue
+
 
 # Define callbacks
 def roomChanged(data): 
@@ -277,7 +281,7 @@ def endSong(data):
     userID = data['room']['metadata']['current_song']['djid']
     name = data['room']['metadata']['current_song']['djname']
     if djQueue:
-        bot.speak('Since we have a DJ queue, it\'s time for {} to step down.'.format(name))
+        bot.speak('Since we have a DJ queue, it\'s time for {} to step down.'.format(theUserList[roomDJs[0]]['name']))
 
 def noSong(data):
     bot.addDj()
