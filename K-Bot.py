@@ -144,13 +144,13 @@ def checkDjQueue():
         for dj in djQueue:
             queueMsg += '[{}] :: {}'.format(queuePos+1,djQueue[queuePos]['name'])
             queuePos += 1
-        bot.speak('Here is the current DJ queue: {}'.format(queueMsg))
+        bot.speak('Here is the current DJ queue: {}; '.format(queueMsg))
 
     
 def addToDJQueue(userID, name):
     #Normally this should be set to 5, but for testing, we are going to set it to 1
     print roomDJs
-    if len(roomDJs) == maxDjCount:
+    if len(roomDJs) == maxDjCount and not roomDJs.has_key(userID):
         djQueue.append({'userID':userID,'name':name})
         #Need to figure out the position in the deque object
         bot.speak('Added {} to the DJ queue'.format(name))
@@ -301,10 +301,10 @@ def djEscorted(data):
     print 'DJs:', roomDJs
 
 def endSong(data):
-    print 'endsong:'#, data
+    print 'endsong:', roomDJs
     userID = data['room']['metadata']['current_song']['djid']
     name = data['room']['metadata']['current_song']['djname']
-    print 'TheUser List: {}'.format(theUsersList[roomDJs[0]])
+    #print 'TheUser List: {}'.format(theUsersList[roomDJs[0]])
     print 'pos 0 in the DJ queue: {}'.format(roomDJs[0])
     if djQueue:
         bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs[0]]['name']))
