@@ -128,7 +128,7 @@ def checkDjQueue():
         queueMsg = ''
         queuePos = 0
         for dj in djQueue:
-            queueMsg += '[{}]::{}'.format(queuePos+1,djQueue[queuePos]['name'])
+            queueMsg += '[{}] :: {}'.format(queuePos+1,djQueue[queuePos]['name'])
             queuePos += 1
         bot.speak('Here is the current DJ queue: {}'.format(queueMsg))
 
@@ -249,7 +249,7 @@ def djSteppedUp(data):
             djQueue.popleft()
             print djQueue
         else:
-            bot.speak('It would appear that {} took the DJ spot that was reserved for {}.'.format(name, djQueue[0]['name']))
+            bot.speak('It would appear that @{} took the DJ spot that was reserved for @{}.'.format(name, djQueue[0]['name']))
 
     # If I'm on stage, and there at least 2 other DJs, then I should step down
     # This needs debugging, and it needs to be made smarter. As it is, if the bot it issued a step up command from an op
@@ -264,7 +264,7 @@ def djSteppedDown(data):
 
     #If we haven't maxed out the DJ spots
     if len(roomDJs) < maxDjCount and djQueue:
-        bot.speak('A DJ spot has opened up. {} is next in line.'.format(djQueue[0]['name']))
+        bot.speak('A DJ spot has opened up. @{} is next in line.'.format(djQueue[0]['name']))
 
     #If we have 0 or 1 DJs, then step up
     if len(roomDJs) <= 1:
@@ -287,7 +287,7 @@ def endSong(data):
     print 'pos 0 in the DJ queue: {}'.format(roomDJs[0])
     print 'TheUser List: {}'.format(theUsersList[roomDJs[0]])
     if djQueue:
-        bot.speak('Since we have a DJ queue, it\'s time for {} to step down.'.format(theUsersList[roomDJs[0]]['name']))
+        bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs[0]]['name']))
 
 def noSong(data):
     bot.addDj()
