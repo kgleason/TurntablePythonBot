@@ -20,10 +20,7 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # Todo: Enforce the DJ queue
 # Command for the bot to reload the help files
 # Create a class for every global variable that we have
-# When there is a queue, remind the 1st DJ (not the finishing DJ) that it is time to step down
 # Add in a timer for the next DJ to step up. Remove any suqatters.
-# Put a space after the :: when listing out the DJ queue
-# Bug when queueing up right after the bot joins the room. Seems to think that len(roomDJs) == maxDJCount
 # Allow people to remove from the queue
 
 
@@ -146,17 +143,18 @@ def addToDJQueue(userID, name):
 
 def calculateAwesome(voteType=None, voterUid=None):
     # Debugging
-    print 'Debugging'
-    print 'Stepped into calculateAwesome: voteType = {} and voterUid = {} and the current song is {}'.format(voteType, voterUid, curSongID)
+    #print 'Debugging'
+    
+    #print 'Stepped into calculateAwesome: voteType = {} and voterUid = {} and the current song is {}'.format(voteType, voterUid, curSongID)
 
     #Here we got a vote event from a user, and need to process it
     if voteType == 'up':
-        print 'Got an upvote'
+        #print 'Got an upvote'
         if not theBopList.has_key(curSongID):
             theBopList[curSongID] = []
         #print theBopList
         theBopList[curSongID].append(voterUid)
-        print 'Right now we have {} votes for this song'.format(len(theBopList[curSongID]))
+        #print 'Right now we have {} votes for this song'.format(len(theBopList[curSongID]))
 
     #otherwise, we probably called this from a different place to see if we should change the bots voting behavior
 
@@ -179,7 +177,7 @@ def updateVotes(data):
     voteLog = roomMeta['votelog'][0] 
     voterUid = voteLog[0]
     voteType = voteLog[1]
-    print 'Someone has voted.',        data
+    #print 'Someone has voted.',        data
     calculateAwesome(voteType, voterUid)
 
 
@@ -231,6 +229,7 @@ def newSong(data):
     saveState()
 
 def djSteppedUp(data):
+    print 'add_dj: ',data
     global roomDJs
     user = data['user'][0]
     #print 'user:',user
@@ -238,7 +237,7 @@ def djSteppedUp(data):
     #print 'name:',name
     userID = user['userid']
     #print 'userID',userID
-    roomDJs = data['djs']
+    roomDJs.append(userID)
     #print 'DJs:', roomDJs
     #print 'The new DJ is {}'.format(newDjID)
 
