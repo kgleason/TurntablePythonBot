@@ -56,7 +56,7 @@ def roomChanged(data):
     #Fill in the DJs
     pos = 0
     for dj in roomMeta['djs']:
-        roomDJs[pos] = dj
+        roomDJs[str(pos)] = dj
         pos += 1
 
 
@@ -302,12 +302,12 @@ def djEscorted(data):
 
 def endSong(data):
     print 'endsong:', roomDJs
-    userID = data['room']['metadata']['current_song']['djid']
-    name = data['room']['metadata']['current_song']['djname']
+    #userID = data['room']['metadata']['current_song']['djid']
+    #name = data['room']['metadata']['current_song']['djname']
     #print 'TheUser List: {}'.format(theUsersList[roomDJs[0]])
-    print 'pos 0 in the DJ queue: {}'.format(roomDJs[0])
+    print 'pos 0 in the DJ queue: {}'.format(roomDJs['0'])
     if djQueue:
-        bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs[0]]['name']))
+        bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs['0']]['name']))
 
 def noSong(data):
     bot.addDj()
