@@ -70,6 +70,7 @@ def roomChanged(data):
     bot.modifyLaptop('linux')
     print 'The bot has changed room.'
     print 'The new room is {} and it allows {} max DJs'.format(roomInfo['name'],maxDjCount)
+    print 'There are currently {} DJs'.format(len(roomDJs))
 
     if not roomDJs:
         bot.addDj()
