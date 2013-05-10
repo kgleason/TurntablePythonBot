@@ -19,6 +19,7 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 
 # Todo: Enforce the DJ queue
 # Command for the bot to reload the help files
+# Create a class for every global variable that we have
 
 # Define callbacks
 def roomChanged(data): 
@@ -27,6 +28,7 @@ def roomChanged(data):
     global curSongID
     global curDjID
     global theOpList
+    global maxDjCount
     roomInfo = data['room']
     roomMeta = roomInfo['metadata']
     curDjID = roomMeta['current_dj']
@@ -34,7 +36,7 @@ def roomChanged(data):
     curSongID = songLog[0]['_id']
     roomMods = roomMeta['moderator_id']
     roomDJs = roomMeta['djs']
-
+    maxDjCount = roomMeta['max_djs']
     #print 'curDjID: {}'.format(curDjID)
     #print 'curSongID: {}'.format(curSongID)
     #print 'roomMods: {}'.format(roomMods)
@@ -60,7 +62,8 @@ def roomChanged(data):
             #print '{} is already an op. Moving on'.format(roomMod)
 
     bot.modifyLaptop('linux')
-    print 'The bot has changed room.', roomInfo['created']
+    print 'The bot has changed room.', roomInfo['created'].
+    print 'The new room is {} and it allows {} max DJs'.format(roomInfo['name'],maxDjCount)
 
     if not roomDJs:
         bot.addDj()
