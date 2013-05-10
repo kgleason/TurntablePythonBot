@@ -242,9 +242,9 @@ def djSteppedUp(data):
     #print 'name:',name
     userID = user['userid']
     #print 'userID',userID
-    roomDJs.append(userID)
-    #print 'DJs:', roomDJs
-    #print 'The new DJ is {}'.format(newDjID)
+    roomDJs[len(roomDJs)] = userID
+    print 'DJs:', roomDJs
+    print 'The new DJ is {} and they are in position {}'.format(newDjID,len(roomDJs))
 
     # If we have a queue
     if djQueue:
