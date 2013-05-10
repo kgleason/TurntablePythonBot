@@ -23,6 +23,8 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # When there is a queue, remind the 1st DJ (not the finishing DJ) that it is time to step down
 # Add in a timer for the next DJ to step up. Remove any suqatters.
 # Put a space after the :: when listing out the DJ queue
+# Bug when queueing up right after the bot joins the room. Seems to think that len(roomDJs) == maxDJCount
+# Allow people to remove from the queue
 
 
 # Define callbacks
@@ -280,8 +282,10 @@ def endSong(data):
     print 'endsong:'#, data
     userID = data['room']['metadata']['current_song']['djid']
     name = data['room']['metadata']['current_song']['djname']
+    print 'pos 0 in the DJ queue: {}'.format(roomDJs[0])
+    print 'TheUser List: {}'.format(theUsersList)
     if djQueue:
-        bot.speak('Since we have a DJ queue, it\'s time for {} to step down.'.format(theUserList[roomDJs[0]]['name']))
+        bot.speak('Since we have a DJ queue, it\'s time for {} to step down.'.format(roomDJs[0]))
 
 def noSong(data):
     bot.addDj()
