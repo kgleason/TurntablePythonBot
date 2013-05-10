@@ -22,6 +22,8 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # Create a class for every global variable that we have
 # Add in a timer for the next DJ to step up. Remove any suqatters.
 # Allow people to remove from the queue
+# Disallow current DJs from entering the queue
+# Check that an exiting user is removed from the DJ queue.
 
 
 # Define callbacks
@@ -231,8 +233,9 @@ def newSong(data):
     saveState()
 
 def djSteppedUp(data):
-    print 'add_dj: ',data
     global roomDJs
+    print 'add_dj: ',data
+    print type(roomDJs)
     user = data['user'][0]
     #print 'user:',user
     name = user['name']
@@ -285,8 +288,8 @@ def endSong(data):
     print 'endsong:'#, data
     userID = data['room']['metadata']['current_song']['djid']
     name = data['room']['metadata']['current_song']['djname']
-    print 'pos 0 in the DJ queue: {}'.format(roomDJs[0])
     print 'TheUser List: {}'.format(theUsersList[roomDJs[0]])
+    print 'pos 0 in the DJ queue: {}'.format(roomDJs[0])
     if djQueue:
         bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs[0]]['name']))
 
