@@ -248,15 +248,11 @@ def newSong(data):
 def djSteppedUp(data):
     global roomDJs
     print 'add_dj: ',data
-    #print type(roomDJs)
     user = data['user'][0]
-    #print 'user:',user
     name = user['name']
-    #print 'name:',name
     userID = user['userid']
-    #print 'userID',userID
+    roomDJs = data['djs']
     print 'The new DJ is {} and they are in position {}'.format(newDjID,len(roomDJs))
-    roomDJs[len(roomDJs)] = userID
     print 'DJs:', roomDJs
 
 
