@@ -119,7 +119,9 @@ def speak(data):
         addToDJQueue(userID=userID,name=name)
 
 def checkDjQueue():
-    if not djQueue or djQueue == None:
+    if not djQueue and len(roomDJs) < maxDjCount:
+        bot.speak('There are only {} DJs! No need for a queue!'.format(len(roomDJs)))
+    elif not djQueue or djQueue == None:
         bot.speak('The DJ queue is currently empty')
     else:
         queueMsg = ''
