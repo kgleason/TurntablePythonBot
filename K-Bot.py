@@ -41,7 +41,7 @@ def roomChanged(data):
     songLog = roomMeta['songlog']
     curSongID = songLog[0]['_id']
     roomMods = roomMeta['moderator_id']
-    roomDJs = roomMeta['djs']
+    #roomDJs = roomMeta['djs']
     maxDjCount = roomMeta['max_djs']
     #print 'curDjID: {}'.format(curDjID)
     #print 'curSongID: {}'.format(curSongID)
@@ -52,6 +52,13 @@ def roomChanged(data):
     
     #Reset the bop List
     theBopList = {}
+
+    #Fill in the DJs
+    pos = 0
+    for dj in roomMeta['djs']:
+        roomDJs[pos] = dj
+        pos += 1
+
 
     #Populate the Users
     users = data['users']
@@ -85,7 +92,13 @@ def roomInfo(data):
     songLog = roomMeta['songlog']
     curSongID = songLog[0]['_id']
     #roomMods = roomMeta['moderator_id']
-    roomDJs = roomMeta['djs']
+    #roomDJs = roomMeta['djs']
+
+    #Fill in the DJs
+    pos = 0
+    for dj in roomMeta['djs']:
+        roomDJs[pos] = dj
+        pos += 1
 
 def speak(data):
     name = data['name']
@@ -235,7 +248,7 @@ def newSong(data):
 def djSteppedUp(data):
     global roomDJs
     print 'add_dj: ',data
-    print type(roomDJs)
+    #print type(roomDJs)
     user = data['user'][0]
     #print 'user:',user
     name = user['name']
@@ -264,7 +277,13 @@ def djSteppedUp(data):
 
 def djSteppedDown(data):
     global roomDJs
-    roomDJs = data['djs']
+    #roomDJs = data['djs']
+
+    #Fill in the DJs
+    pos = 0
+    for dj in roomMeta['djs']:
+        roomDJs[pos] = dj
+        pos += 1
 
     #If we haven't maxed out the DJ spots
     if len(roomDJs) < maxDjCount and djQueue:
@@ -281,7 +300,7 @@ def djEscorted(data):
     escortedUserID = escortedUser['userid']
     print 'DJs:', roomDJs
     print 'a DJ was escorted offstage', data
-    roomDJs.remove(escortedUserID)
+    #roomDJs.remove(escortedUserID)
     print 'DJs:', roomDJs
 
 def endSong(data):
@@ -404,7 +423,7 @@ def initializeVars():
 
     #Initialize the DJ Queue
     djQueue = deque([])
-    roomDJs = []
+    roomDJs = {}
     maxDjCount = 1
 
 
