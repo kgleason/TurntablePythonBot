@@ -62,7 +62,7 @@ def roomChanged(data):
             #print '{} is already an op. Moving on'.format(roomMod)
 
     bot.modifyLaptop('linux')
-    print 'The bot has changed room.', roomInfo['created'].
+    print 'The bot has changed room.'
     print 'The new room is {} and it allows {} max DJs'.format(roomInfo['name'],maxDjCount)
 
     if not roomDJs:
