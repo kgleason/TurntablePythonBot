@@ -285,9 +285,9 @@ def endSong(data):
     userID = data['room']['metadata']['current_song']['djid']
     name = data['room']['metadata']['current_song']['djname']
     print 'pos 0 in the DJ queue: {}'.format(roomDJs[0])
-    print 'TheUser List: {}'.format(theUsersList)
+    print 'TheUser List: {}'.format(theUsersList[roomDJs[0]])
     if djQueue:
-        bot.speak('Since we have a DJ queue, it\'s time for {} to step down.'.format(roomDJs[0]))
+        bot.speak('Since we have a DJ queue, it\'s time for {} to step down.'.format(theUsersList[roomDJs[0]]['name']))
 
 def noSong(data):
     bot.addDj()
