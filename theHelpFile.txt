@@ -6,4 +6,5 @@ In the main room channel, the following commands are available:
 !help : Presumably you already figured this one out
 !queue list : Show the current DJ queue. Alias: !ql
 !queue add : Get yourself added to the queue. Aliases: !q+ or !add
+!queue remove : Remove yourself from the queue. Aliases: !q- or !remove
 !status : Get your current status.
