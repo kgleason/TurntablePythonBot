@@ -38,7 +38,6 @@ def roomChanged(data):
     songLog = roomMeta['songlog']
     curSongID = songLog[0]['_id']
     roomMods = roomMeta['moderator_id']
-    #roomDJs = roomMeta['djs']
     maxDjCount = roomMeta['max_djs']
     #print 'curDjID: {}'.format(curDjID)
     #print 'curSongID: {}'.format(curSongID)
@@ -85,7 +84,6 @@ def roomInfo(data):
     songLog = roomMeta['songlog']
     curSongID = songLog[0]['_id']
     #roomMods = roomMeta['moderator_id']
-    #roomDJs = roomMeta['djs']
 
     #Fill in the DJs
     buildRoomDjsList(roomMeta['djs'])
@@ -162,11 +160,16 @@ def removeFromDJQueue(userID, name):
 
 def buildRoomDjsList(djData):
     global roomDJs
+    #print "We were passed a {} of DJs".format(type(djData))
     #Fill in the DJs
-    pos = 0
-    for dj in djData:
-        roomDJs[str(pos)] = dj
-        pos += 1
+    if type(djData) == dict:
+        roomDJs = djData
+    elif type(djData) == list:
+        pos = 0
+        for dj in djData:
+            roomDJs[str(pos)] = dj
+            pos += 1
+
 
 def checkIfBotShouldDJ():
     # If I am already a DJ ....
@@ -256,12 +259,10 @@ def newSong(data):
 
 def djSteppedUp(data):
     global roomDJs
-    print 'add_dj: '#,data
     user = data['user'][0]
     name = user['name']
     userID = user['userid']
-    roomDJs = data['djs']
-    #print 'The new DJ is {} and they are in position {}'.format(newDjID,len(roomDJs))
+    buildRoomDjsList(data['djs'])
     print 'DJs:', roomDJs
 
 
@@ -278,10 +279,8 @@ def djSteppedUp(data):
 
 def djSteppedDown(data):
     global roomDJs
-    print 'rem_dj:', data['djs']
-    #roomDJs = data['djs']
 
-    buildRoomDjsList(roomMeta['djs'])
+    buildRoomDjsList(data['djs'])
 
     #If we haven't maxed out the DJ spots
     if len(roomDJs) < maxDjCount and djQueue:
