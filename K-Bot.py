@@ -231,10 +231,6 @@ def newSong(data):
     curSong = room_metadata['current_song']
     curSongID = curSong['_id']
     curDjID = curSong['djid']
-    #print 'song_id:', curSongID
-    #print 'roomNow:', bot.roomNow()
-    #print 'curSong:', curSong
-    #print 'metadata:', room_metadata
 
     #create the bopList key
     theBopList[curSongID] = []
@@ -267,7 +263,7 @@ def djSteppedUp(data):
     # This needs debugging, and it needs to be made smarter. As it is, if the bot it issued a step up command from an op
     # and there are more than 2 people on stage, it will immediately step down. Should probably be put into it's own method
     # with a variable to track why it is on stage.
-    if len(roomDJs) >= 3 and myUserID in roomDJs:
+    if len(roomDJs) >= 3 and myUserID in roomDJs.values():
         bot.remDj(myUserID)
 
 def djSteppedDown(data):
