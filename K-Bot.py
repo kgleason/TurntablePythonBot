@@ -168,6 +168,18 @@ def buildRoomDjsList(djData):
         roomDJs[str(pos)] = dj
         pos += 1
 
+def checkIfBotShouldDJ():
+    # If I am already a DJ ....
+    if myUserID in roomDJs.values():
+        # If there at least 2 other DJs, then I should step down
+        if len(roomDJs) >= 3 and curDjID != myUserID:
+            bot.remDj(myUserID)
+    else:
+        #If we have 0 or 1 DJs, then step up
+        if len(roomDJs) <= 1:
+            bot.addDj()
+
+
 def calculateAwesome(voteType=None, voterUid=None):
     if voteType == 'up':
         #print 'Got an upvote'
@@ -182,6 +194,7 @@ def calculateAwesome(voteType=None, voterUid=None):
 
     if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
         bot.snag()
+        bot.playlistAdd(curSongID)
         bot.becomeFan(curDjID)
 
 
@@ -239,6 +252,8 @@ def newSong(data):
 
     saveState()
 
+    checkIfBotShouldDJ()
+
 def djSteppedUp(data):
     global roomDJs
     print 'add_dj: '#,data
@@ -259,16 +274,11 @@ def djSteppedUp(data):
         else:
             bot.speak('It would appear that @{} took the DJ spot that was reserved for @{}.'.format(name, djQueue[0]['name']))
 
-    # If I'm on stage, and there at least 2 other DJs, then I should step down
-    # This needs debugging, and it needs to be made smarter. As it is, if the bot it issued a step up command from an op
-    # and there are more than 2 people on stage, it will immediately step down. Should probably be put into it's own method
-    # with a variable to track why it is on stage.
-    if len(roomDJs) >= 3 and myUserID in roomDJs.values():
-        bot.remDj(myUserID)
+    checkIfBotShouldDJ()
 
 def djSteppedDown(data):
     global roomDJs
-    print 'rem_dj:' data['djs']
+    print 'rem_dj:', data['djs']
     #roomDJs = data['djs']
 
     buildRoomDjsList(roomMeta['djs'])
@@ -277,10 +287,7 @@ def djSteppedDown(data):
     if len(roomDJs) < maxDjCount and djQueue:
         bot.speak('A DJ spot has opened up. @{} is next in line.'.format(djQueue[0]['name']))
 
-    #If we have 0 or 1 DJs, then step up
-    if len(roomDJs) <= 1:
-        bot.addDj()
-
+    checkIfBotShouldDJ()
 
 def djEscorted(data):
     global roomDJs
@@ -291,6 +298,8 @@ def djEscorted(data):
     #roomDJs.remove(escortedUserID)
     print 'DJs:', roomDJs
 
+    checkIfBotShouldDJ()
+
 def endSong(data):
     print 'endsong:', roomDJs
     #userID = data['room']['metadata']['current_song']['djid']
@@ -300,9 +309,10 @@ def endSong(data):
     if djQueue:
         bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs['0']]['name']))
 
+    checkIfBotShouldDJ()
+
 def noSong(data):
-    bot.addDj()
-    #print 'nosong:', data
+    checkIfBotShouldDJ()
 
 def PlaylistToPM(data):
     print 'playlist:', data
