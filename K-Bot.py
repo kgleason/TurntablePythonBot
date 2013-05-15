@@ -133,9 +133,10 @@ def checkDjQueue():
         queueMsg = ''
         queuePos = 0
         for dj in djQueue:
-            queueMsg += '[{}] :: {}'.format(queuePos+1,djQueue[queuePos]['name'])
-            queuePos += 1
-        bot.speak('Here is the current DJ queue: {}; '.format(queueMsg))
+            bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
+            #queueMsg += '[{}] :: {}'.format(queuePos+1,djQueue[queuePos]['name'])
+            #queuePos += 1
+        #bot.speak('Here is the current DJ queue: {}; '.format(queueMsg))
 
     
 def addToDJQueue(userID, name):
