@@ -21,9 +21,6 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # Command for the bot to reload the help files
 # Create a class for every global variable that we have
 # Add in a timer for the next DJ to step up. Remove any suqatters.
-# Allow people to remove from the queue
-# Disallow current DJs from entering the queue
-# Check that an exiting user is removed from the DJ queue.
 
 
 # Define callbacks
@@ -53,11 +50,7 @@ def roomChanged(data):
     #Reset the bop List
     theBopList = {}
 
-    #Fill in the DJs
-    pos = 0
-    for dj in roomMeta['djs']:
-        roomDJs[str(pos)] = dj
-        pos += 1
+    buildRoomDjsList(roomMeta['djs'])
 
 
     #Populate the Users
@@ -95,10 +88,7 @@ def roomInfo(data):
     #roomDJs = roomMeta['djs']
 
     #Fill in the DJs
-    pos = 0
-    for dj in roomMeta['djs']:
-        roomDJs[pos] = dj
-        pos += 1
+    buildRoomDjsList(roomMeta['djs'])
 
 def speak(data):
     name = data['name']
@@ -133,6 +123,9 @@ def speak(data):
     if text == '!q+' or text == '!add' or text == '!queue add':
         addToDJQueue(userID=userID,name=name)
 
+    if text == '!q-' or text == '!remove' or text == '!queue remove':
+        removeFromDJQueue(userID=userID,name=name)
+
 def checkDjQueue():
     if not djQueue and len(roomDJs) < maxDjCount:
         bot.speak('There are only {} DJs! No need for a queue!'.format(len(roomDJs)))
@@ -150,13 +143,30 @@ def checkDjQueue():
 def addToDJQueue(userID, name):
     #Normally this should be set to 5, but for testing, we are going to set it to 1
     print roomDJs
-    if len(roomDJs) == maxDjCount: # and not roomDJs.has_key(userID):
-        djQueue.append({'userID':userID,'name':name})
+    djInfo = {'userID':user['userid'], 'name':user['name']}
+    if len(roomDJs) == maxDjCount and not djInfo in djQueue: 
+        djQueue.append(djInfo)
         #Need to figure out the position in the deque object
         bot.speak('Added {} to the DJ queue'.format(name))
         print 'djQueue:', djQueue
     else:
         checkDjQueue()
+
+def removeFromDJQueue(userID, name):
+    djInfo = {'userID':user['userid'], 'name':user['name']}
+    if djQueue.count(djInfo) >= 1:
+        djQueue.remove(djInfo)
+        bot.speak('{} has been removed from the DJ queue'.format(name))
+    else:
+        bot.speak('{} doesn\'t seem to be in the queue'.format(name))
+
+def buildRoomDjsList(djData):
+    global roomDJs
+    #Fill in the DJs
+    pos = 0
+    for dj in djData:
+        roomDJs[str(pos)] = dj
+        pos += 1
 
 def calculateAwesome(voteType=None, voterUid=None):
     # Debugging
@@ -274,14 +284,10 @@ def djSteppedUp(data):
 
 def djSteppedDown(data):
     global roomDJs
-    print 'rem_dj:', data['djs']
+    print 'rem_dj:' data['djs']
     #roomDJs = data['djs']
 
-    #Fill in the DJs
-    pos = 0
-    for dj in roomMeta['djs']:
-        roomDJs[str(pos)] = dj
-        pos += 1
+    buildRoomDjsList(roomMeta['djs'])
 
     #If we haven't maxed out the DJ spots
     if len(roomDJs) < maxDjCount and djQueue:
