@@ -169,31 +169,19 @@ def buildRoomDjsList(djData):
         pos += 1
 
 def calculateAwesome(voteType=None, voterUid=None):
-    # Debugging
-    #print 'Debugging'
-    
-    #print 'Stepped into calculateAwesome: voteType = {} and voterUid = {} and the current song is {}'.format(voteType, voterUid, curSongID)
-
-    #Here we got a vote event from a user, and need to process it
     if voteType == 'up':
         #print 'Got an upvote'
         if not theBopList.has_key(curSongID):
             theBopList[curSongID] = []
         #print theBopList
         theBopList[curSongID].append(voterUid)
-        #print 'Right now we have {} votes for this song'.format(len(theBopList[curSongID]))
 
-    #otherwise, we probably called this from a different place to see if we should change the bots voting behavior
-
-    # If the current song has received likes from half of the room
-    # Subtract 1 from the user list so that the bot doesn't count itself
-    if len(theBopList[curSongID]) == (len(theUsersList)-1)/2 and voteType == 'up':
+    if len(theBopList[curSongID]) == (len(theUsersList)-1)/3 and voteType == 'up':
         bot.vote('up')
         #bot.speak('This song is awesome')
 
-    if len(theBopList[curSongID]) == len(theUsersList):
-        #bot.speak('With all {} people jamming, maybe we should turn up the lights'.format(str(len(theBopList[curSongID]))))
-        # If we have a song that everyone likes, then let's become a fan of the current DJ
+    if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
+        bot.snag()
         bot.becomeFan(curDjID)
 
 
