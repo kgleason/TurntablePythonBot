@@ -101,7 +101,7 @@ def speak(data):
         bot.speak('Hey! How are you {}?'.format(name))
 
     if text == '!suck it':
-        bot.speak('Whoa there. Just go ahead and settle down {}!'.fornat(name))
+        bot.speak('Whoa there. Just go ahead and settle down {}!'.format(name))
 
     if text == '!user count':
         bot.speak('There are {} people jamming in here'.format(str(len(theUsersList))))
@@ -133,26 +133,33 @@ def checkDjQueue():
         queueMsg = ''
         queuePos = 0
         for dj in djQueue:
-            bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
+               bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
+               queuePos += 1
+               sleep(0.25)
             #queueMsg += '[{}] :: {}'.format(queuePos+1,djQueue[queuePos]['name'])
             #queuePos += 1
         #bot.speak('Here is the current DJ queue: {}; '.format(queueMsg))
 
     
 def addToDJQueue(userID, name):
-    #Normally this should be set to 5, but for testing, we are going to set it to 1
-    print roomDJs
-    djInfo = {'userID':user['userid'], 'name':user['name']}
-    if len(roomDJs) == maxDjCount and not djInfo in djQueue: 
+    print 'Got an add request from {}, id {}'.format(name,userID)
+    djInfo = {'userID':userID, 'name':name}
+    print 'djInfo = {}'.format(djInfo)
+    print 'We have {} DJs right now and the max is {}'.format(len(roomDJs),maxDjCount)
+
+    print 'djQueue = {}'.format(djQueue)
+
+    if len(roomDJs) == maxDjCount and not djInfo in djQueue and userID not in roomDJs.values(): 
         djQueue.append(djInfo)
+        checkDjQueue()
         #Need to figure out the position in the deque object
-        bot.speak('Added {} to the DJ queue'.format(name))
-        print 'djQueue:', djQueue
+        #bot.speak('Added {} to the DJ queue'.format(name))
+        #print 'djQueue:', djQueue
     else:
         checkDjQueue()
 
 def removeFromDJQueue(userID, name):
-    djInfo = {'userID':user['userid'], 'name':user['name']}
+    djInfo = {'userID':userID, 'name':name}
     if djQueue.count(djInfo) >= 1:
         djQueue.remove(djInfo)
         bot.speak('{} has been removed from the DJ queue'.format(name))
@@ -307,7 +314,8 @@ def endSong(data):
     #print 'TheUser List: {}'.format(theUsersList[roomDJs[0]])
     print 'pos 0 in the DJ queue: {}'.format(roomDJs['0'])
     if djQueue:
-        bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs['0']]['name']))
+        #bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs['0']]['name']))
+        bot.remDJ(roomDJs['0'])
 
     checkIfBotShouldDJ()
 
