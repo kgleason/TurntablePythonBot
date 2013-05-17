@@ -3,6 +3,7 @@ from pprint import pprint
 from time import sleep
 from collections import deque
 from myConfig import *
+from sys import exit
 import json
 
 # There should be a file in the same directory as the bot
@@ -20,7 +21,16 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # Todo: Enforce the DJ queue
 # Command for the bot to reload the help files
 # Create a class for every global variable that we have
+# Change the djQueue from deque([{userid: name}]) to deque([userid]) and use the User List to get names (allows for people to change names?)
+# Bel more clear with the messaging when someone does not get added to the DJ queue
 # Add in a timer for the next DJ to step up. Remove any suqatters.
+# Let bot ops remove someone from the queue
+# Remove someone from the queue after 15 seconds of a spot opening up
+# When a DJ does not step up, remove them from the queue, and annoucne the next person, if there is one
+# When the next DJ has not stepped up, someone cannot add to the queue
+# Add a !theme option
+# Let bot ops set the !theme
+# allow for commands to be +, !, or / prefixed
 
 
 # Define callbacks
@@ -199,8 +209,8 @@ def calculateAwesome(voteType=None, voterUid=None):
         #print theBopList
         theBopList[curSongID].append(voterUid)
 
-    if len(theBopList[curSongID]) == (len(theUsersList)-1)/3 and voteType == 'up':
-        bot.vote('up')
+    if len(theBopList[curSongID]) == (len(theUsersList))/3 and voteType == 'up':
+        bot.bop()
         #bot.speak('This song is awesome')
 
     if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
@@ -314,8 +324,8 @@ def endSong(data):
     #print 'TheUser List: {}'.format(theUsersList[roomDJs[0]])
     print 'pos 0 in the DJ queue: {}'.format(roomDJs['0'])
     if djQueue:
-        #bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs['0']]['name']))
-        bot.remDJ(roomDJs['0'])
+        bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs['0']]['name']))
+        bot.remDj(roomDJs['0'])
 
     checkIfBotShouldDJ()
 
@@ -329,7 +339,8 @@ def privateMessage(data):
     global curSongID
     userID = data['senderid']
     message = data['text']
-    print 'Current song is {}'.format(curSongID)
+    print 'Got a PM from {}, userID {}'.format(theUsersList[userID]['name'],userID)
+    #print 'Current song is {}'.format(curSongID)
     #print 'room info:', bot.roomInfo()
     #bot.pm('The current song is %s' % curSongID, user)
 
@@ -358,6 +369,9 @@ def privateMessage(data):
 
         if message == 'help':
             giveHelp(userID)
+
+        if message == 'die':
+            exit()
 
     # If the person sending the PM is not an OP, then be a parrot
     else:
