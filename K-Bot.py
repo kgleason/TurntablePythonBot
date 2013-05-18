@@ -28,6 +28,7 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # Remove someone from the queue after 15 seconds of a spot opening up
 # When a DJ does not step up, remove them from the queue, and annoucne the next person, if there is one
 # When the next DJ has not stepped up, someone cannot add to the queue
+# Pull the PM stuff back into a separate function
 
 
 # Define callbacks
@@ -396,7 +397,7 @@ def privateMessage(data):
         if message == 'help':
             giveHelp(userID)
 
-        if message == 'die':
+        if message == 'die' and userID == ownerID:
             exit()
 
         if re.match('^theme = ', message):
