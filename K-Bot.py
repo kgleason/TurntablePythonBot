@@ -5,6 +5,7 @@ from collections import deque
 from myConfig import *
 from sys import exit
 import json
+import re
 
 # There should be a file in the same directory as the bot
 # that is named myConfig.py. This file shold contain some
@@ -24,13 +25,9 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # Change the djQueue from deque([{userid: name}]) to deque([userid]) and use the User List to get names (allows for people to change names?)
 # Bel more clear with the messaging when someone does not get added to the DJ queue
 # Add in a timer for the next DJ to step up. Remove any suqatters.
-# Let bot ops remove someone from the queue
 # Remove someone from the queue after 15 seconds of a spot opening up
 # When a DJ does not step up, remove them from the queue, and annoucne the next person, if there is one
 # When the next DJ has not stepped up, someone cannot add to the queue
-# Add a !theme option
-# Let bot ops set the !theme
-# allow for commands to be +, !, or / prefixed
 
 
 # Define callbacks
@@ -83,6 +80,9 @@ def roomChanged(data):
 
     if not roomDJs:
         bot.addDj()
+
+def updateUser(data):
+    print 'Update User: ',data
     
 def roomInfo(data):
     global roomDJs
@@ -107,32 +107,45 @@ def speak(data):
     #print 'Debug:', data
     print '{} just said {}'.format(name, text)
 
-    if text == '!hello':
-        bot.speak('Hey! How are you {}?'.format(name))
+    if re.match('^[!+/]',text):
+        print 'Received a command: {}'.format(text[1:])
+        processCommand(command=text[1:],userID=userID)
 
-    if text == '!suck it':
-        bot.speak('Whoa there. Just go ahead and settle down {}!'.format(name))
+def processCommand(command,userID):
+    userName = theUsersList[userID]['name']
 
-    if text == '!user count':
+    if command == 'hello':
+        bot.speak('Hey! How are you {}?'.format(userName))
+
+    if command == 'suck it':
+        bot.speak('Whoa there. Just go ahead and settle down {}!'.format(userName))
+
+    if command == 'user count':
         bot.speak('There are {} people jamming in here'.format(str(len(theUsersList))))
 
-    if text == '!help':
+    if command == 'help':
         giveHelp(userID)
 
-    if text == '!status':
+    if command == 'status':
         if theOpList.has_key(userID):
             bot.pm('You are currently an operator',userID)
         else:
-            bot.pm('You, {}, are a valued member of this room'.format(name),userID)
+            bot.pm('You, {}, are a valued member of this room'.format(userName),userID)
 
-    if text == '!ql' or text == '!queue list':
+    if command == 'ql' or command == 'queue list':
         checkDjQueue()
 
-    if text == '!q+' or text == '!add' or text == '!queue add':
-        addToDJQueue(userID=userID,name=name)
+    if command == 'q+' or command == 'add' or command == 'queue add':
+        addToDJQueue(userID=userID,name=userName)
 
-    if text == '!q-' or text == '!remove' or text == '!queue remove':
-        removeFromDJQueue(userID=userID,name=name)
+    if command == 'q-' or command == 'remove' or command == 'queue remove':
+        removeFromDJQueue(userID=userID,name=userName)
+
+    if command == 'theme':
+        if roomTheme == None:
+            bot.speak('There\'s no theme right now. Anything goes!')
+        else:
+            bot.speak('The theme right now is \"{}\"'.format(roomTheme))
 
 def checkDjQueue():
     if not djQueue and len(roomDJs) < maxDjCount:
@@ -143,9 +156,10 @@ def checkDjQueue():
         queueMsg = ''
         queuePos = 0
         for dj in djQueue:
-               bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
-               queuePos += 1
-               sleep(0.25)
+            print 'Postion {}: {}'.format(queuePos,theUsersList[djQueue[queuePos]['userID']]['name'])
+            bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
+            queuePos += 1
+            sleep(0.25)
             #queueMsg += '[{}] :: {}'.format(queuePos+1,djQueue[queuePos]['name'])
             #queuePos += 1
         #bot.speak('Here is the current DJ queue: {}; '.format(queueMsg))
@@ -168,13 +182,21 @@ def addToDJQueue(userID, name):
     else:
         checkDjQueue()
 
-def removeFromDJQueue(userID, name):
+def removeFromDJQueue(userID, name=None, botOp=None):
+    if not name:
+        name = theUsersList[userID]['name']
     djInfo = {'userID':userID, 'name':name}
     if djQueue.count(djInfo) >= 1:
         djQueue.remove(djInfo)
-        bot.speak('{} has been removed from the DJ queue'.format(name))
+        if not botOp:
+            bot.speak('{} has been removed from the DJ queue'.format(name))
+        else:
+            bot.pm('{} has been removed from the DJ queue'.format(name),botOp)
     else:
-        bot.speak('{} doesn\'t seem to be in the queue'.format(name))
+        if not botOp:
+            bot.speak('{} doesn\'t seem to be in the queue'.format(name))
+        else:
+            bot.pm('{} is not in the queue'.format(name),botOp)
 
 def buildRoomDjsList(djData):
     global roomDJs
@@ -197,7 +219,7 @@ def checkIfBotShouldDJ():
             bot.remDj(myUserID)
     else:
         #If we have 0 or 1 DJs, then step up
-        if len(roomDJs) <= 1:
+        if len(roomDJs) <= 1 and not djQueue:
             bot.addDj()
 
 
@@ -236,6 +258,8 @@ def registered(data):
     theUsersList[user['userid']] = user
     #print 'Someone registered.',       data
     bot.speak('Hello @{}. I\'m the WalMart greeter of this room. Type !help to see what I can do'.format(user['name']))
+    if roomTheme:
+        processCommand('theme',myUserID)
     calculateAwesome()
     #bot.roomInfo(roomInfo)
 
@@ -337,9 +361,11 @@ def PlaylistToPM(data):
     
 def privateMessage(data):
     global curSongID
+    global roomTheme
     userID = data['senderid']
+    userName = theUsersList[userID]['name']
     message = data['text']
-    print 'Got a PM from {}, userID {}'.format(theUsersList[userID]['name'],userID)
+    print 'Got a PM from {}: {}'.format(userName,message)
     #print 'Current song is {}'.format(curSongID)
     #print 'room info:', bot.roomInfo()
     #bot.pm('The current song is %s' % curSongID, user)
@@ -373,6 +399,25 @@ def privateMessage(data):
         if message == 'die':
             exit()
 
+        if re.match('^theme = ', message):
+            roomTheme = message[8:]
+            bot.speak('{} has set the theme for this room to \"{}\"'.format(userName,roomTheme))
+
+        if message == 'pop':
+            bot.speak('Removing {} from the queue since {} asked me to'.format(theUsersList[djQueue[0]['userID']]['name'],userName))
+            djQueue.popleft()
+            checkDjQueue()
+
+        if re.match('^dq [0-9]*$',message):
+            popPos = int(message[3:])-1
+            dqUserId = djQueue[popPos]['userID']
+            print 'Attmepting to remove {} from q{}'.format(dqUserId,popPos)
+            bot.speak('Yanking {} from the queue. {} made me do it!'.format(theUsersList[dqUserId]['name'],userName))
+            removeFromDJQueue(userID=dqUserId,botOp=userID)
+            checkDjQueue()
+
+
+
     # If the person sending the PM is not an OP, then be a parrot
     else:
         bot.pm(message, userID)
@@ -405,6 +450,7 @@ def initializeVars():
     global djQueue
     global roomDJs
     global maxDjCount
+    global roomTheme
 
     try:
         with open('theHelpFile.txt','r') as helpFile:
@@ -446,6 +492,9 @@ def initializeVars():
     roomDJs = {}
     maxDjCount = 1
 
+    #Set the theme to empty
+    roomTheme = None
+
 
 
 initializeVars()
@@ -463,6 +512,7 @@ bot.on('pmmed',         privateMessage)
 bot.on('add_dj',        djSteppedUp)
 bot.on('rem_dj',        djSteppedDown)
 bot.on('escort',        djEscorted)
+bot.on('update_user',   updateUser)
 
 
 # Start the bot
