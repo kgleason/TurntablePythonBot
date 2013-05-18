@@ -3,3 +3,7 @@ bop : make me give this song an awesome, regardless of the state of the room.
 snag : I'll add the current song to my playlist
 step up : Make me a DJ
 step down : Get me off the stage
+dq <Position#> : remove the person at <Position#> from the DJ Queue
+pop : remove the person in first place in the DJ Queue. The same as 'dq 1'
+theme = <room theme> : set & announce the theme for the room
+die : cause the python process to exit. Can only be executed by the owner.
