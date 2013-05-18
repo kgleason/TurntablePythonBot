@@ -455,6 +455,33 @@ def saveState():
     with open('theBotPlaylist.json','w') as f:
         f.write(bot.playlistAll(json.dumps))
 
+def loadState():
+    global helpMsg
+    global opHelpMsg
+    global theOpList
+
+    try:
+        with open('theHelpFile.txt','r') as helpFile:
+            helpMsg = helpFile.readlines()
+    except IOError:
+        print 'The file theHelpFile.txt was not found. Help may not work.'
+
+    try:
+        with open('theOpHelpFile.txt','r') as opHelpFile:
+            opHelpMsg = opHelpFile.readlines()
+    except IOError:
+        print 'The file theOpHelpFile.txt was not found. Help may not work'
+
+    #Initialize the op list
+    try:
+        with open('theOpList.json','r') as f:
+            theOpList = json.load(f)
+    except IOError:
+    #if not theOpList:
+        print 'Loading the default Op List'
+        theOpList = {ownerID:0}
+        #print 'Success'
+
 def giveHelp(userID):
     #print 'Offering some help to {}'.format(userID)
     for line in helpMsg:
@@ -489,30 +516,10 @@ def initializeVars():
     global maxDjCount
     global roomTheme
 
-    try:
-        with open('theHelpFile.txt','r') as helpFile:
-            helpMsg = helpFile.readlines()
-    except IOError:
-        print 'The file theHelpFile.txt was not found. Help may not work.'
-
-    try:
-        with open('theOpHelpFile.txt','r') as opHelpFile:
-            opHelpMsg = opHelpFile.readlines()
-    except IOError:
-        print 'The file theOpHelpFile.txt was not found. Help may not work'
-
     #empty out the op list
     theOpList = {}
-
-    #Initialize the op list
-    try:
-        with open('theOpList.json','r') as f:
-            theOpList = json.load(f)
-    except IOError:
-    #if not theOpList:
-        print 'Loading the default Op List'
-        theOpList = {ownerID:0}
-        #print 'Success'
+    
+    loadState()
 
     # Reset the users list
     theUsersList = {}
@@ -536,7 +543,7 @@ initializeVars()
 
 # Bind listeners
 bot.on('roomChanged',   roomChanged)
-bot.on('speak',         speak      )
+bot.on('speak',         speak)
 bot.on('update_votes',  updateVotes)
 bot.on('registered',    registered )
 bot.on('deregistered',  deregistered)
