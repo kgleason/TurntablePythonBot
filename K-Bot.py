@@ -43,9 +43,6 @@ def roomChanged(data):
     roomMods = roomMeta['moderator_id']
     maxDjCount = roomMeta['max_djs']
     roomOwnerID = roomMeta['creator']['userid']
-    #print 'curDjID: {}'.format(curDjID)
-    #print 'curSongID: {}'.format(curSongID)
-    #print 'roomMods: {}'.format(roomMods)
 
     # Reset the users list
     theUsersList = {}
@@ -65,10 +62,7 @@ def roomChanged(data):
     for roomMod in roomMods:
         #print 'Checking to see if {} is an op'.format(roomMod)
         if theOpList.get(roomMod) == None:
-            #print '{} is not an op. Promoting'.format(roomMod)
             theOpList[roomMod] = 0
-        #else:
-            #print '{} is already an op. Moving on'.format(roomMod)
 
     bot.modifyLaptop('linux')
     print 'The bot has changed room.'
@@ -100,12 +94,10 @@ def speak(data):
     text = data['text']
     userID = data['userid']
 
-    # This is a debugging line
-    #print 'Debug:', data
-    print '{} just said {}'.format(name, text)
+    print '{} just said \"{}\"'.format(name, text)
 
     if re.match('^[!+/]',text):
-        print 'Received a command: {}'.format(text[1:])
+        print 'Received a command: \"{}\"'.format(text[1:])
         processCommand(command=text[1:],userID=userID)
 
 def processCommand(command,userID):
@@ -151,66 +143,35 @@ def processCommand(command,userID):
     else:
         bot.speak('I\'m sorry, I don\'t understand the {} command'.format(command))
 
-def checkDjQueue(userID=None):
+def checkDjQueue():
     # This function sucks. Need to be more clear about what is happening.
-    # Scenarios:
-
-    # The room is not at maxDJCount. No need to queue
-    # The room is at maxDJCount and the person adding is already on stage
-    # The room is at maxDJCount and the person adding is already in the queue
-    # The room is at maxDJCount and the person adding is qualified to queue
-    # The room is not at maxDJCount, there is a queue, the person adding is qualified.
-    if checkIsQueueNeeded():
-        if djQueue:
-            queuePos = 0
-            for dj in djQueue:
-                print 'Postion {}: {}'.format(queuePos,theUsersList[djQueue[queuePos]['userID']]['name'])
-                bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
-                queuePos += 1
-                sleep(0.25)
-        else:
-            bot.speak('There\'s no queue right now. The line starts here.')
+    if djQueue:
+        # We have a queue. Spit it out
+        speakDjQueue()
+    elif len(roomDJs) < maxDjCount:
+        # We don't have enough DJs
+        bot.speak('There are only {} DJs. No need for a queue'.format(len(roomDJs)))
+    elif len(roomDJs) == maxDjCount:
+        bot.speak('There is no queue. Type !add to claim your spot now.')
     else:
-        if len(roomDJs) < maxDjCount:
-            bot.speak('There are only {} DJs! No need for a queue.'.format(len(roomDJs)))
-        else:
-            if userID:
-                bot.speak('@{}, you can\'t be added to the queue right now'.format(theUsersList[userID]['name']))
-            else:
-                bot.speak('I I shouldn\'t be here. :poop:')
+        bot.speak('I should not be here. :poop:')
 
-
-###
-### The old method
-###
-    #if not djQueue and len(roomDJs) < maxDjCount:
-    #    bot.speak('There are only {} DJs! No need for a queue!'.format(len(roomDJs)))
-    #elif not djQueue or djQueue == None:
-    #    bot.speak('The DJ queue is currently empty')
-    #else:
-        #queueMsg = ''
-        #queuePos = 0
-        #for dj in djQueue:
-            #print 'Postion {}: {}'.format(queuePos,theUsersList[djQueue[queuePos]['userID']]['name'])
-            #bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
-            #queuePos += 1
-            #sleep(0.25)
-            #queueMsg += '[{}] :: {}'.format(queuePos+1,djQueue[queuePos]['name'])
-            #queuePos += 1
-        #bot.speak('Here is the current DJ queue: {}; '.format(queueMsg))
+def speakDjQueue():
+    queuePos = 0
+    for dj in djQueue:
+        bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
+        queuePos += 1
+        sleep(0.25)
 
 def checkIsQualifiedToQueue(userID):
     userName = theUsersList[userID]['name']
     djInfo = {'userID':userID, 'name':userName}
-    if not userID in roomDJs.values() and not djInfo in djQueue:
-        #This user is qualified
-        return True
-    #elif not userID in roomDJs.values() and djInfo in djQueue:
-    #    return 'in queue'
-    #elif userId in roomDJs.values() and not djInfo in djQueue:
-    #    return 'on stage'
-    else:
+    
+    if userID in roomDJs.values() or djInfo in djQueue:
+        #This user is disqualified
         return False
+    else:
+        return True
     
 def checkIsQueueNeeded():
     if djQueue:
@@ -221,28 +182,22 @@ def checkIsQueueNeeded():
         return False
 
 def addToDJQueue(userID, name):
-    print 'Got an add request from {}, id {}'.format(name,userID)
-    djInfo = {'userID':userID, 'name':name}
-    print 'djInfo = {}'.format(djInfo)
-    print 'We have {} DJs right now and the max is {}'.format(len(roomDJs),maxDjCount)
-
-    print 'djQueue = {}'.format(djQueue)
-
+    userName = theUsersList[userID]['name']
+    djInfo = {'userID':userID, 'name':userName}
+    
     # In order to add to the queue, the person should not be on stage or in the queue already
     # Start by checking qualfications
     if checkIsQualifiedToQueue(userID) and checkIsQueueNeeded():
+        print 'Adding {} to the queue'.format(userName)
         djQueue.append(djInfo)
+    elif not checkIsQualifiedToQueue(userID):
+        bot.speak('@{}, you are not qualified to get in the queue right now'.format(userName))
+    elif not checkIsQueueNeeded():
+        checkDjQueue()
     else:
-        checkDjQueue(userID=userID)
+        bot.speak('How did I get here? What the :poop:')
 
-    #if len(roomDJs) == maxDjCount and not djInfo in djQueue and userID not in roomDJs.values(): 
-    #    djQueue.append(djInfo)
-    #    checkDjQueue()
-        #Need to figure out the position in the deque object
-        #bot.speak('Added {} to the DJ queue'.format(name))
-        #print 'djQueue:', djQueue
-    #else:
-    #    checkDjQueue()
+    speakDjQueue()
 
 def removeFromDJQueue(userID, name=None, botOp=None):
     if not name:
@@ -262,7 +217,6 @@ def removeFromDJQueue(userID, name=None, botOp=None):
 
 def buildRoomDjsList(djData):
     global roomDJs
-    #print "We were passed a {} of DJs".format(type(djData))
     #Fill in the DJs
     if type(djData) == dict:
         roomDJs = djData
@@ -287,30 +241,27 @@ def checkIfBotShouldDJ():
 
 def calculateAwesome(voteType=None, voterUid=None):
     if voteType == 'up':
-        #print 'Got an upvote'
         if not theBopList.has_key(curSongID):
             theBopList[curSongID] = []
-        #print theBopList
         theBopList[curSongID].append(voterUid)
 
-    if len(theBopList[curSongID]) == (len(theUsersList))/3 and voteType == 'up':
+    if len(theBopList[curSongID]) == (len(theUsersList))/3 and (voteType == 'up' or not voteType):
         bot.bop()
-        #bot.speak('This song is awesome')
+        bot.speak('This song is awesome')
 
     if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
         bot.snag()
+        bot.speak('I :yellow_heart: this song')
         bot.playlistAdd(curSongID)
         bot.becomeFan(curDjID)
 
 
 def updateVotes(data):
     room = data['room']
-    #curSongID = data['current_song']['_id']
     roomMeta = room['metadata']
     voteLog = roomMeta['votelog'][0] 
     voterUid = voteLog[0]
     voteType = voteLog[1]
-    #print 'Someone has voted.',        data
     calculateAwesome(voteType, voterUid)
 
 
@@ -318,20 +269,16 @@ def registered(data):
     global theUsersList
     user = data['user'][0]
     theUsersList[user['userid']] = user
-    #print 'Someone registered.',       data
     bot.speak('Hello @{}. I\'m the WalMart greeter of this room. Type !help to see what I can do'.format(user['name']))
     if roomTheme:
         processCommand('theme',myUserID)
     calculateAwesome()
-    #bot.roomInfo(roomInfo)
 
 def deregistered(data):
     global theUsersList
     user = data['user'][0]
     del theUsersList[user['userid']]
-    #print 'Someone deregistered', data
-    bot.speak('Bummer that {} left.'.format(user['name']))
-    calculateAwesome()
+    bot.speak('Bummer that {} left.'.format(user['name'])) 
     if djQueue:
         djInfo = {'userID':user['userid'], 'name':user['name']}
         print djInfo
@@ -342,6 +289,7 @@ def deregistered(data):
             print '{} was not in the djQueue'.format(user['name'])
     else:
         print 'No djQueue'
+    calculateAwesome() 
   
 def newSong(data):
     global curSongID
@@ -416,9 +364,6 @@ def djEscorted(data):
 
 def endSong(data):
     print 'endsong:', roomDJs
-    #userID = data['room']['metadata']['current_song']['djid']
-    #name = data['room']['metadata']['current_song']['djname']
-    #print 'TheUser List: {}'.format(theUsersList[roomDJs[0]])
     print 'pos 0 in the DJ queue: {}'.format(roomDJs['0'])
     if djQueue:
         bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs['0']]['name']))
@@ -439,9 +384,6 @@ def privateMessage(data):
     userName = theUsersList[userID]['name']
     message = data['text']
     print 'Got a PM from {}: {}'.format(userName,message)
-    #print 'Current song is {}'.format(curSongID)
-    #print 'room info:', bot.roomInfo()
-    #bot.pm('The current song is %s' % curSongID, user)
 
     # If the person sending the PMs is an Op ....
     if theOpList.has_key(userID):
