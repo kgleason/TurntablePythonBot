@@ -40,6 +40,7 @@ def roomChanged(data):
     global theOpList
     global maxDjCount
     global roomDJs
+    global roomOwner
     roomInfo = data['room']
     roomMeta = roomInfo['metadata']
     curDjID = roomMeta['current_dj']
@@ -47,6 +48,7 @@ def roomChanged(data):
     curSongID = songLog[0]['_id']
     roomMods = roomMeta['moderator_id']
     maxDjCount = roomMeta['max_djs']
+    roomOwnerID = roomMeta['creator']['userid']
     #print 'curDjID: {}'.format(curDjID)
     #print 'curSongID: {}'.format(curSongID)
     #print 'roomMods: {}'.format(roomMods)
@@ -397,7 +399,7 @@ def privateMessage(data):
         if message == 'help':
             giveHelp(userID)
 
-        if message == 'die' and userID == ownerID:
+        if message == 'die' and (userID == ownerID or userID == roomOwnerID):
             exit()
 
         if re.match('^theme = ', message):
