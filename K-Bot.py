@@ -72,8 +72,8 @@ def buildOpList(roomMods):
     #Run through the room mods. Just make every mod in the room an op
     for roomMod in roomMods:
         #print 'Checking to see if {} is an op'.format(roomMod)
-        if theOpList.get(roomMod) == None:
-            theOpList[roomMod] = 0
+        if roomMod['userid'] in theOpList:
+            theOpList.append(roomMod['userid'])
 
 def updateUser(data):
     print 'Update User: ',data
@@ -392,7 +392,7 @@ def privateMessage(data):
     print 'Got a PM from {}: "{}"'.format(userName,message)
 
     # If the person sending the PMs is an Op ....
-    if theOpList.has_key(userID):
+    if userID in theOpList:
         if message == 'bop':
             bot.bop()
 
@@ -451,7 +451,7 @@ def exitGracefully():
 def saveState():
     #json.dump(theOpList,'theOpList.json',sort_keys=True,indent=4)
     with open('theOpList.json','w') as f:
-        f.write(json.dumps(theOpList,sort_keys=True,indent=4))
+        f.write(json.dumps(theOpList))
     with open('theBotPlaylist.json','w') as f:
         f.write(bot.playlistAll(json.dumps))
 
@@ -517,7 +517,7 @@ def initializeVars():
     global roomTheme
 
     #empty out the op list
-    theOpList = {}
+    theOpList = []
     
     loadState()
 
