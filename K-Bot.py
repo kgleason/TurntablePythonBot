@@ -23,6 +23,7 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # Command for the bot to reload the help files
 # Create a class for every global variable that we have
 # Change the djQueue from deque([{userid: name}]) to deque([userid]) and use the User List to get names (allows for people to change names?)
+# Handle the snag events
 
 
 # Define callbacks
@@ -58,19 +59,21 @@ def roomChanged(data):
     for user in users:
         theUsersList[user['userid']] = user
 
+    buildOpList(roomMods)
+
+    bot.modifyLaptop('linux')
+    #print 'The bot has changed room.'
+    #print 'The new room is {} and it allows {} max DJs'.format(roomInfo['name'],maxDjCount)
+    #print 'There are currently {} DJs'.format(roomDJs)
+
+    checkIfBotShouldDJ()
+
+def buildOpList(roomMods):
     #Run through the room mods. Just make every mod in the room an op
     for roomMod in roomMods:
         #print 'Checking to see if {} is an op'.format(roomMod)
         if theOpList.get(roomMod) == None:
             theOpList[roomMod] = 0
-
-    bot.modifyLaptop('linux')
-    print 'The bot has changed room.'
-    print 'The new room is {} and it allows {} max DJs'.format(roomInfo['name'],maxDjCount)
-    print 'There are currently {} DJs'.format(roomDJs)
-
-    if not roomDJs:
-        bot.addDj()
 
 def updateUser(data):
     print 'Update User: ',data
@@ -159,7 +162,8 @@ def checkDjQueue():
 def speakDjQueue():
     queuePos = 0
     for dj in djQueue:
-        bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
+        djName = theUsersList[djQueue[queuePos]]
+        bot.speak('Q: [{}]{}'.format(queuePos+1,djName))
         queuePos += 1
         sleep(0.25)
 
@@ -167,7 +171,7 @@ def checkIsQualifiedToQueue(userID):
     userName = theUsersList[userID]['name']
     djInfo = {'userID':userID, 'name':userName}
     
-    if userID in roomDJs.values() or djInfo in djQueue:
+    if userID in roomDJs.values() or userID in djQueue:
         #This user is disqualified
         return False
     else:
@@ -189,7 +193,7 @@ def addToDJQueue(userID, name):
     # Start by checking qualfications
     if checkIsQualifiedToQueue(userID) and checkIsQueueNeeded():
         print 'Adding {} to the queue'.format(userName)
-        djQueue.append(djInfo)
+        djQueue.append(userID)
     elif not checkIsQualifiedToQueue(userID):
         bot.speak('@{}, you are not qualified to get in the queue right now'.format(userName))
     elif not checkIsQueueNeeded():
@@ -203,8 +207,8 @@ def removeFromDJQueue(userID, name=None, botOp=None):
     if not name:
         name = theUsersList[userID]['name']
     djInfo = {'userID':userID, 'name':name}
-    if djQueue.count(djInfo) >= 1:
-        djQueue.remove(djInfo)
+    if djQueue.count(userID) >= 1:
+        djQueue.remove(userID)
         if not botOp:
             bot.speak('{} has been removed from the DJ queue'.format(name))
         else:
@@ -320,12 +324,13 @@ def djSteppedUp(data):
 
     # If we have a queue
     if djQueue:
+        firstInQueueName = theUsersList[djQueue[0]]['name']
         # If the new DJ was first in the queue
-        if userID == djQueue[0]['userID']:
+        if userID == djQueue[0]:
             djQueue.popleft()
             print djQueue
         else:
-            bot.speak('It would appear that @{} took the DJ spot that was reserved for @{}.'.format(name, djQueue[0]['name']))
+            bot.speak('It would appear that @{} took the DJ spot that was reserved for @{}.'.format(name, firstInQueueName))
             bot.remDj(userID)
     checkIfBotShouldDJ()
 
@@ -339,8 +344,9 @@ def djSteppedDown(data):
         nextDjTimer()
 
 def nextDjTimer():
-    nextDjID = djQueue[0]['userid']
-    bot.speak('A DJ spot has opened up. @{} has 15 seconds to step up'.format(djQueue[0]['name']))
+    nextDjID = djQueue[0]
+    nextDjName = theUsersList[nextDjID]['name']
+    bot.speak('A DJ spot has opened up. @{} has 15 seconds to step up'.format(nextDjName))
     sleep(15)
     if not nextDjID in roomDJs.values():
         removeFromDJQueue(userID=nextDjID)
@@ -383,11 +389,10 @@ def privateMessage(data):
     userID = data['senderid']
     userName = theUsersList[userID]['name']
     message = data['text']
-    print 'Got a PM from {}: {}'.format(userName,message)
+    print 'Got a PM from {}: "{}"'.format(userName,message)
 
     # If the person sending the PMs is an Op ....
     if theOpList.has_key(userID):
-    #if user == '513101bbaaa5cd316ba3a24e':
         if message == 'bop':
             bot.bop()
 
@@ -412,7 +417,7 @@ def privateMessage(data):
             giveHelp(userID)
 
         elif message == 'die' and (userID == ownerID or userID == roomOwnerID):
-            exit()
+            exitGracefully()
 
         elif re.match('^theme = ', message):
             roomTheme = message[8:]
@@ -439,6 +444,10 @@ def privateMessage(data):
     else:
         bot.pm(message, userID)
 
+def exitGracefully():
+    saveState()
+    exit()
+
 def saveState():
     #json.dump(theOpList,'theOpList.json',sort_keys=True,indent=4)
     with open('theOpList.json','w') as f:
@@ -458,6 +467,17 @@ def giveHelp(userID):
             bot.pm(line.rstrip(),userID)
             sleep(0.5)
             #print line.rstrip()
+
+def songSnagged(data):
+    print 'Song snagged: ', data
+    command = data['command'] #This should always = snagged
+    userID = data['userid'] #This will be set to the user who snagged the file
+
+def newModerator(data):
+    print 'New Moderator: ', data
+
+def remModerator(data):
+    print 'Removed Moderator: ', data
 
 def initializeVars():
     # Initialize some variables here, mostly things that we need from the get go
@@ -512,8 +532,6 @@ def initializeVars():
     #Set the theme to empty
     roomTheme = None
 
-
-
 initializeVars()
 
 # Bind listeners
@@ -530,6 +548,10 @@ bot.on('add_dj',        djSteppedUp)
 bot.on('rem_dj',        djSteppedDown)
 bot.on('escort',        djEscorted)
 bot.on('update_user',   updateUser)
+bot.on('snagged',       songSnagged)
+bot.on('new_moderator', newModerator)
+bot.on('rem_moderator', remModerator)
+
 
 
 # Start the bot
