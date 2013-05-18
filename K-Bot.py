@@ -23,8 +23,6 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # Command for the bot to reload the help files
 # Create a class for every global variable that we have
 # Change the djQueue from deque([{userid: name}]) to deque([userid]) and use the User List to get names (allows for people to change names?)
-# Bel more clear with the messaging when someone does not get added to the DJ queue
-# When the next DJ has not stepped up, someone cannot add to the queue
 
 
 # Define callbacks
