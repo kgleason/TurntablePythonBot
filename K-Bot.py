@@ -336,7 +336,16 @@ def djSteppedDown(data):
 
     #If we haven't maxed out the DJ spots
     if len(roomDJs) < maxDjCount and djQueue:
-        bot.speak('A DJ spot has opened up. @{} is next in line.'.format(djQueue[0]['name']))
+        nextDjTimer()
+
+def nextDjTimer():
+    nextDjID = djQueue[0]['userid']
+    bot.speak('A DJ spot has opened up. @{} has 15 seconds to step up'.format(djQueue[0]['name']))
+    sleep(15)
+    if not nextDjID in roomDJs.values():
+        removeFromDJQueue(userID=nextDjID)
+        if djQueue:
+            nextDjTimer()
 
     checkIfBotShouldDJ()
 
