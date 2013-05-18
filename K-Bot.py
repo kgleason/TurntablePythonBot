@@ -117,38 +117,45 @@ def speak(data):
 def processCommand(command,userID):
     userName = theUsersList[userID]['name']
 
-    if command == 'hello':
+    # Catch the /me commands to the room and move on.
+    if re.match('^me ',command):
+        pass
+
+    elif command == 'hello':
         bot.speak('Hey! How are you {}?'.format(userName))
 
-    if command == 'suck it':
+    elif command == 'suck it':
         bot.speak('Whoa there. Just go ahead and settle down {}!'.format(userName))
 
-    if command == 'user count':
+    elif command == 'user count':
         bot.speak('There are {} people jamming in here'.format(str(len(theUsersList))))
 
-    if command == 'help':
+    elif command == 'help':
         giveHelp(userID)
 
-    if command == 'status':
+    elif command == 'status':
         if theOpList.has_key(userID):
             bot.pm('You are currently an operator',userID)
         else:
             bot.pm('You, {}, are a valued member of this room'.format(userName),userID)
 
-    if command == 'ql' or command == 'queue list':
+    elif command == 'ql' or command == 'queue list':
         checkDjQueue()
 
-    if command == 'q+' or command == 'add' or command == 'queue add':
+    elif command == 'q+' or command == 'add' or command == 'queue add':
         addToDJQueue(userID=userID,name=userName)
 
-    if command == 'q-' or command == 'remove' or command == 'queue remove':
+    elif command == 'q-' or command == 'remove' or command == 'queue remove':
         removeFromDJQueue(userID=userID,name=userName)
 
-    if command == 'theme':
+    elif command == 'theme':
         if roomTheme == None:
             bot.speak('There\'s no theme right now. Anything goes!')
         else:
             bot.speak('The theme right now is \"{}\"'.format(roomTheme))
+
+    else:
+        bot.speak('I\'m sorry, I don\'t understand the {} command'.format(command))
 
 def checkDjQueue():
     if not djQueue and len(roomDJs) < maxDjCount:
@@ -379,39 +386,39 @@ def privateMessage(data):
         if message == 'bop':
             bot.bop()
 
-        if message == 'snag':
+        elif message == 'snag':
             bot.pm('adding {} to my default playlist'.format(curSongID),userID)
             bot.playlistAdd(curSongID)
             bot.snag()
 
-        if message == 'step up':
+        elif message == 'step up':
             bot.addDj()
 
-        if message == 'skip':
+        elif message == 'skip':
             bot.skip()
 
-        if message == 'step down':
+        elif message == 'step down':
             bot.remDj(myUserID)
 
-        if message == 'playlist':
+        elif message == 'playlist':
             bot.playlistAll(PlaylistToPM)
 
-        if message == 'help':
+        elif message == 'help':
             giveHelp(userID)
 
-        if message == 'die' and (userID == ownerID or userID == roomOwnerID):
+        elif message == 'die' and (userID == ownerID or userID == roomOwnerID):
             exit()
 
-        if re.match('^theme = ', message):
+        elif re.match('^theme = ', message):
             roomTheme = message[8:]
             bot.speak('{} has set the theme for this room to \"{}\"'.format(userName,roomTheme))
 
-        if message == 'pop':
+        elif message == 'pop':
             bot.speak('Removing {} from the queue since {} asked me to'.format(theUsersList[djQueue[0]['userID']]['name'],userName))
             djQueue.popleft()
             checkDjQueue()
 
-        if re.match('^dq [0-9]*$',message):
+        elif re.match('^dq [0-9]*$',message):
             popPos = int(message[3:])-1
             dqUserId = djQueue[popPos]['userID']
             print 'Attmepting to remove {} from q{}'.format(dqUserId,popPos)
@@ -419,6 +426,8 @@ def privateMessage(data):
             removeFromDJQueue(userID=dqUserId,botOp=userID)
             checkDjQueue()
 
+        else:
+            bot.pm('Exsqueeze me? Baking powder?',userID)
 
 
     # If the person sending the PM is not an OP, then be a parrot
