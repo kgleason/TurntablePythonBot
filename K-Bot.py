@@ -445,15 +445,15 @@ def privateMessage(data):
         bot.pm(message, userID)
 
 def exitGracefully():
+    print 'Getting ready to exit'
     saveState()
+    print 'Exiting'
     exit()
 
 def saveState():
-    #json.dump(theOpList,'theOpList.json',sort_keys=True,indent=4)
+    print 'Saving state'
     with open('theOpList.json','w') as f:
         f.write(json.dumps(theOpList))
-    with open('theBotPlaylist.json','w') as f:
-        f.write(bot.playlistAll(json.dumps))
 
 def loadState():
     global helpMsg
@@ -479,7 +479,8 @@ def loadState():
     except IOError:
     #if not theOpList:
         print 'Loading the default Op List'
-        theOpList = {ownerID:0}
+        theOpList.append(ownerID)
+        print 'The Op List: {}'.format(theOpList)
         #print 'Success'
 
 def giveHelp(userID):
