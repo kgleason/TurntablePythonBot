@@ -153,24 +153,75 @@ def processCommand(command,userID):
     else:
         bot.speak('I\'m sorry, I don\'t understand the {} command'.format(command))
 
-def checkDjQueue():
-    if not djQueue and len(roomDJs) < maxDjCount:
-        bot.speak('There are only {} DJs! No need for a queue!'.format(len(roomDJs)))
-    elif not djQueue or djQueue == None:
-        bot.speak('The DJ queue is currently empty')
+def checkDjQueue(userID=None):
+    # This function sucks. Need to be more clear about what is happening.
+    # Scenarios:
+
+    # The room is not at maxDJCount. No need to queue
+    # The room is at maxDJCount and the person adding is already on stage
+    # The room is at maxDJCount and the person adding is already in the queue
+    # The room is at maxDJCount and the person adding is qualified to queue
+    # The room is not at maxDJCount, there is a queue, the person adding is qualified.
+    if checkIsQueueNeeded():
+        if djQueue:
+            queuePos = 0
+            for dj in djQueue:
+                print 'Postion {}: {}'.format(queuePos,theUsersList[djQueue[queuePos]['userID']]['name'])
+                bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
+                queuePos += 1
+                sleep(0.25)
+        else:
+            bot.speak('There\'s no queue right now. The line starts here.')
     else:
-        queueMsg = ''
-        queuePos = 0
-        for dj in djQueue:
-            print 'Postion {}: {}'.format(queuePos,theUsersList[djQueue[queuePos]['userID']]['name'])
-            bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
-            queuePos += 1
-            sleep(0.25)
+        if len(roomDJs) < maxDjCount:
+            bot.speak('There are only {} DJs! No need for a queue.'.format(len(roomDJs)))
+        else:
+            if userID:
+                bot.speak('@{}, you can\'t be added to the queue right now'.format(theUsersList[userID]['name']))
+            else:
+                bot.speak('I I shouldn\'t be here. :poop:')
+
+
+###
+### The old method
+###
+    #if not djQueue and len(roomDJs) < maxDjCount:
+    #    bot.speak('There are only {} DJs! No need for a queue!'.format(len(roomDJs)))
+    #elif not djQueue or djQueue == None:
+    #    bot.speak('The DJ queue is currently empty')
+    #else:
+        #queueMsg = ''
+        #queuePos = 0
+        #for dj in djQueue:
+            #print 'Postion {}: {}'.format(queuePos,theUsersList[djQueue[queuePos]['userID']]['name'])
+            #bot.speak('Q: [{}]{}'.format(queuePos+1,djQueue[queuePos]['name']))
+            #queuePos += 1
+            #sleep(0.25)
             #queueMsg += '[{}] :: {}'.format(queuePos+1,djQueue[queuePos]['name'])
             #queuePos += 1
         #bot.speak('Here is the current DJ queue: {}; '.format(queueMsg))
 
+def checkIsQualifiedToQueue(userID):
+    userName = theUsersList[userID]['name']
+    djInfo = {'userID':userID, 'name':userName}
+    if not userID in roomDJs.values() and not djInfo in djQueue:
+        #This user is qualified
+        return True
+    #elif not userID in roomDJs.values() and djInfo in djQueue:
+    #    return 'in queue'
+    #elif userId in roomDJs.values() and not djInfo in djQueue:
+    #    return 'on stage'
+    else:
+        return False
     
+def checkIsQueueNeeded():
+    if djQueue:
+        return True
+    elif not djQueue and len(roomDJs) == maxDjCount:
+        return True
+    else:
+        return False
+
 def addToDJQueue(userID, name):
     print 'Got an add request from {}, id {}'.format(name,userID)
     djInfo = {'userID':userID, 'name':name}
@@ -179,14 +230,21 @@ def addToDJQueue(userID, name):
 
     print 'djQueue = {}'.format(djQueue)
 
-    if len(roomDJs) == maxDjCount and not djInfo in djQueue and userID not in roomDJs.values(): 
+    # In order to add to the queue, the person should not be on stage or in the queue already
+    # Start by checking qualfications
+    if checkIsQualifiedToQueue(userID) and checkIsQueueNeeded():
         djQueue.append(djInfo)
-        checkDjQueue()
+    else:
+        checkDjQueue(userID=userID)
+
+    #if len(roomDJs) == maxDjCount and not djInfo in djQueue and userID not in roomDJs.values(): 
+    #    djQueue.append(djInfo)
+    #    checkDjQueue()
         #Need to figure out the position in the deque object
         #bot.speak('Added {} to the DJ queue'.format(name))
         #print 'djQueue:', djQueue
-    else:
-        checkDjQueue()
+    #else:
+    #    checkDjQueue()
 
 def removeFromDJQueue(userID, name=None, botOp=None):
     if not name:
