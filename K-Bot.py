@@ -24,11 +24,7 @@ bot = Bot(myAuthKey, myUserID, defaultRoom)
 # Create a class for every global variable that we have
 # Change the djQueue from deque([{userid: name}]) to deque([userid]) and use the User List to get names (allows for people to change names?)
 # Bel more clear with the messaging when someone does not get added to the DJ queue
-# Add in a timer for the next DJ to step up. Remove any suqatters.
-# Remove someone from the queue after 15 seconds of a spot opening up
-# When a DJ does not step up, remove them from the queue, and annoucne the next person, if there is one
 # When the next DJ has not stepped up, someone cannot add to the queue
-# Pull the PM stuff back into a separate function
 
 
 # Define callbacks
@@ -326,7 +322,7 @@ def djSteppedUp(data):
             print djQueue
         else:
             bot.speak('It would appear that @{} took the DJ spot that was reserved for @{}.'.format(name, djQueue[0]['name']))
-
+            bot.remDj(userID)
     checkIfBotShouldDJ()
 
 def djSteppedDown(data):
@@ -346,6 +342,8 @@ def nextDjTimer():
         removeFromDJQueue(userID=nextDjID)
         if djQueue:
             nextDjTimer()
+        else:
+            checkDjQueue()
 
     checkIfBotShouldDJ()
 
