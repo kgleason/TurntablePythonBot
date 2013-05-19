@@ -39,14 +39,34 @@ def checkDatabaseVersion(dbFile):
 		return conn
 
 def upgradeDatabase(con,ver):
+	# This function should walk through the different versions, and if it is done properly,
+	# Upgrade the database from and given point to the most recent.
+	# This will consist of a series of
+	# if ver == x:
+	#	ver += 1
+	#	do stuff
+	# if ver == y:
+	#	ver += 1
+	#	do stuff
+	# if ver == z:
+	#	ver += 1
+	#	pass
+
+	#Initial state
 	if ver == 0:
+		ver += 1
 		with con:
 			try:
 				cur = con.cursor()
-				cur.execute('INSERT INTO BotDbVersion(version) VALUES (1)')
+				cur.execute("INSERT INTO BotDbVersion(version) VALUES (?)",ver)
 				con.commit()
 			except sql.Error, e:
 				print 'Caught a SQLite Exception: {}'.format(e)
+
+	if ver == 1:
+		ver += 1
+		# This is the most recent version, nothing to do here, for now
+		pass
 
 def addSongHistory(con, sid, uid, length, artist, name, album):
 	with con:
