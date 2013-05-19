@@ -88,6 +88,7 @@ def addUserHistory(con, uid, uname, action):
 def addVotingHistory(con, vtype, uid, sid, djID):
 	with con:
 		cur = con.cursor()
+		print "INSERT INTO VotingHistory (voteType, userID, songID, djID, voteDateTime) VALUES ({},{},{},{},datetime(\'now\'))".format(vtype,uid,sid,djID)
 		cur.execute("INSERT INTO VotingHistory (voteType, userID, songID, djID, voteDateTime) VALUES (?,?,?,?,datetime(\'now\'))", (vtype,uid,sid,djID))
 		con.commit()
 
@@ -107,21 +108,35 @@ def saveBotOperators(con, BotOps):
 	with con:
 		cur = con.cursor()
 		cur.execute("DELETE FROM BotOperators")
-		cur.executemany("INSERT INTO BotOperators (userID) VALUES (?)",BotOps)
+		cur.executemany("INSERT INTO BotOperators (userID) VALUES (?)",(BotOps))
 		cur.commit()
 
 def saveDjQueue(con, djQueue):
 	with con:
 		cur = con.cursor()
 		cur.execute("DELETE FROM DjQueue")
-		cur.executemany("INSERT INTO DjQueue (userID) VALUES (?)",djQueue)
+		cur.executemany("INSERT INTO DjQueue (userID) VALUES (?)",(djQueue))
 		cur.commit()
 
 def getMostSongData(con, cnt, songItem):
 	with con:
 		cur = con.cursor()
-		sql="SELECT COUNT(*), {} FROM SongHistory GROUP BY {} ORDER BY 1 DESC LIMIT {}".format(songItem,songItem,str(cnt))
-		cur.execute(sql)
+		qText="SELECT COUNT(*), {} FROM SongHistory GROUP BY {} ORDER BY 1 DESC LIMIT {}".format(songItem,songItem,str(cnt))
+		cur.execute(qText)
 		rows = cur.fetchall()
 	return rows
 
+def getMostVoteData(con, cnt, voteItem, voteType=None):
+	with con:
+		cur = con.cursor()
+		qText="SELECT COUNT(*), {} FROM VotingHistory ".format(voteItem)
+		if voteType:
+			qText += "WHERE voteType = ? "
+		qText += "GROUP BY {} ORDER BY 1 DESC LIMIT ?".format(voteItem)
+		print qText
+		cur.execute(qText,(voteType,str(cnt)))
+		#cur.execute("SELECT COUNT(*), userID FROM VotingHistory WHERE voteType = ? GROUP BY userID ORDER BY 1 DESC LIMIT ?", (voteType,str(cnt)))
+
+		rows = cur.fetchall()
+		print "SQL Returned:".format(rows)
+	return rows
