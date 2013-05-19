@@ -3,9 +3,11 @@ from pprint import pprint
 from time import sleep
 from collections import deque
 from myConfig import *
+from BotDB import *
 from sys import exit
 import json
 import re
+import sqlite3 as sql
 
 # There should be a file in the same directory as the bot
 # that is named myConfig.py. This file shold contain some
@@ -15,6 +17,7 @@ import re
 # myAuthKet     = 'XXXXXX'
 # defaultRoom   = 'XXXXXX'
 # ownerID       = 'XXXXXX'
+# dbFile        = '<BotName>.sqlite'
 
 bot = Bot(myAuthKey, myUserID, defaultRoom)
 
@@ -267,7 +270,8 @@ def updateVotes(data):
     voterUid = voteLog[0]
     voteType = voteLog[1]
     calculateAwesome(voteType, voterUid)
-
+    addVotingHistory(con=dbConn, vtype=voteType, uid=voterUid, sid=curSongID, djID=curDjID)
+    addUserHistory(con=dbConn, uid=voterUid, uname=theUsersList[voterUid]['name'],action='Voted {}'.format(voteType))
 
 def registered(data):  
     global theUsersList
@@ -277,6 +281,7 @@ def registered(data):
     if roomTheme:
         processCommand('theme',myUserID)
     calculateAwesome()
+    addUserHistory(con=dbConn, uid=user['userid'], uname=user['name'],action='Entered')
 
 def deregistered(data):
     global theUsersList
@@ -294,7 +299,8 @@ def deregistered(data):
     else:
         print 'No djQueue'
     calculateAwesome() 
-  
+    addUserHistory(con=dbConn, uid=user['userid'], uname=user['name'],action='Exited')
+
 def newSong(data):
     global curSongID
     global curDjID
@@ -309,9 +315,10 @@ def newSong(data):
 
     bot.roomInfo(roomInfo)
 
-    saveState()
-
     checkIfBotShouldDJ()
+
+    addUserHistory(con=dbConn, uid=curDjID, uname=theUsersList[curDjID]['name'],action='Played a song')
+    addSongHistory(con=dbConn, sid=curSongID, uid=curDjID, length=curSong['metadata']['length'], artist=curSong['metadata']['artist'], name=curSong['metadata']['song'], album=curSong['metadata']['album'])
 
 def djSteppedUp(data):
     global roomDJs
@@ -333,6 +340,7 @@ def djSteppedUp(data):
             bot.speak('It would appear that @{} took the DJ spot that was reserved for @{}.'.format(name, firstInQueueName))
             bot.remDj(userID)
     checkIfBotShouldDJ()
+    addUserHistory(con=dbConn, uid=userID, uname=name,action='Hopped on stage')
 
 def djSteppedDown(data):
     global roomDJs
@@ -342,6 +350,8 @@ def djSteppedDown(data):
     #If we haven't maxed out the DJ spots
     if len(roomDJs) < maxDjCount and djQueue:
         nextDjTimer()
+
+    addUserHistory(con=dbConn, uid=data['user'][0]['userid'], uname=data['user'][0]['name'],action='Left the stage')
 
 def nextDjTimer():
     nextDjID = djQueue[0]
@@ -367,6 +377,8 @@ def djEscorted(data):
     print 'DJs:', roomDJs
 
     checkIfBotShouldDJ()
+    addUserHistory(con=dbConn, uid=escortedUserID, uname=escortedUser['name'],action='Yanked off stage')
+    addUserHistory(con=dbConn, uid=data['modid'], uname=theUsersList[data['modid']]['name'],action='Escorted someone from stage')
 
 def endSong(data):
     print 'endsong:', roomDJs
@@ -445,15 +457,16 @@ def privateMessage(data):
         bot.pm(message, userID)
 
 def exitGracefully():
-    print 'Getting ready to exit'
     saveState()
-    print 'Exiting'
+    if dbConn:
+        dbConn.close()
     exit()
 
 def saveState():
     print 'Saving state'
     with open('theOpList.json','w') as f:
         f.write(json.dumps(theOpList))
+
 
 def loadState():
     global helpMsg
@@ -500,6 +513,8 @@ def songSnagged(data):
     print 'Song snagged: ', data
     command = data['command'] #This should always = snagged
     userID = data['userid'] #This will be set to the user who snagged the file
+    addUserHistory(con=dbConn, uid=userID, uname=theUsersList[userID]['name'],action='Snagged a song')
+    addSnagHistory(con=dbConn, uid=userID, sid=curSongID)
 
 def newModerator(data):
     print 'New Moderator: ', data
@@ -516,6 +531,7 @@ def initializeVars():
     global roomDJs
     global maxDjCount
     global roomTheme
+    global dbConn
 
     #empty out the op list
     theOpList = []
@@ -540,6 +556,10 @@ def initializeVars():
     #Set the theme to empty
     roomTheme = None
 
+    #Create the database connection
+    dbConn = checkDatabaseVersion(dbFile)
+
+
 initializeVars()
 
 # Bind listeners
@@ -559,8 +579,6 @@ bot.on('update_user',   updateUser)
 bot.on('snagged',       songSnagged)
 bot.on('new_moderator', newModerator)
 bot.on('rem_moderator', remModerator)
-
-
 
 # Start the bot
 bot.start()
