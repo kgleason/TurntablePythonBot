@@ -145,7 +145,26 @@ def processCommand(command,userID):
             bot.speak('There\'s no theme right now. Anything goes!')
         else:
             bot.speak('The theme right now is \"{}\"'.format(roomTheme))
+    elif re.match('^top [0-9]+ djs', command):
+        # This should pull the integer out of the command that was passed
+        commandInts = [int(s) for s in command.split() if s.isdigit()]
 
+        # Make the database call, and get a list of tuples
+        # [(SongsPlayed, userID)]
+        results = getBusiestDJs(con=dbConn,cnt=commandInts[0])
+        print 'Got the following results: {}'.format(results)
+
+        if results:
+            bot.speak('Here are the top {} DJs'.format(commandInts[0]))
+            for rec in results:
+                print 'Processing rec: {}'.format(rec)
+                # This only works if they are in the room
+                djName = theUsersList[rec[1]]['name']
+                print 'Found DJ {}'.format(djName)
+                bot.speak('{} Songs :: {}'.format(rec[0],djName))
+                sleep(0.25)
+        else:
+            bot.speak('Apparently no one has played a song with me in the room')
     else:
         bot.speak('I\'m sorry, I don\'t understand the {} command'.format(command))
 

@@ -9,7 +9,8 @@ def checkDatabaseVersion(dbFile):
 	try:
 		cur.execute('SELECT version FROM BotDbVersion')
 		row = cur.fetchone()
-		dbVersion = row['version']
+		dbVersion = row[0]
+		print 'The database is at version {}'.format(dbVersion)
 
 
 	except sql.Error, e:
@@ -54,19 +55,21 @@ def upgradeDatabase(con,ver):
 
 	#Initial state
 	if ver == 0:
+		print 'Upgrading database from version {}'.format(ver)
 		ver += 1
 		with con:
 			try:
 				cur = con.cursor()
-				cur.execute("INSERT INTO BotDbVersion(version) VALUES (?)",ver)
+				cur.execute("INSERT INTO BotDbVersion(version) VALUES (?)",str(ver))
 				con.commit()
 			except sql.Error, e:
 				print 'Caught a SQLite Exception: {}'.format(e)
 
 	if ver == 1:
+		print 'Upgrading database from version {}'.format(ver)
 		ver += 1
 		# This is the most recent version, nothing to do here, for now
-		pass
+		print 'Database is up to date.'
 
 def addSongHistory(con, sid, uid, length, artist, name, album):
 	with con:
@@ -111,3 +114,13 @@ def saveDjQueue(con, djQueue):
 		cur.execute("DELETE FROM DjQueue")
 		cur.executemany("INSERT INTO DjQueue (userID) VALUES (?)",djQueue)
 		cur.commit()
+
+def getBusiestDJs(con, cnt):
+	with con:
+		cur = con.cursor()
+		cur.execute("SELECT COUNT(*) AS SongsPlayed, userID FROM SongHistory GROUP BY userID ORDER BY 1 DESC LIMIT ?", (str(cnt)))
+		rows = cur.fetchall()
+		print 'SQL returned the following results: {}'.format(rows)
+	print 'SQL returned the following results: {}'.format(rows)
+	return rows
+
