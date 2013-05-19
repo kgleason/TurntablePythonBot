@@ -74,9 +74,8 @@ def roomChanged(data):
 def buildOpList(roomMods):
     #Run through the room mods. Just make every mod in the room an op
     for roomMod in roomMods:
-        #print 'Checking to see if {} is an op'.format(roomMod)
-        if roomMod['userid'] in theOpList:
-            theOpList.append(roomMod['userid'])
+        if roomMod in theOpList:
+            theOpList.append(roomMod)
 
 def updateUser(data):
     print 'Update User: ',data
@@ -145,28 +144,30 @@ def processCommand(command,userID):
             bot.speak('There\'s no theme right now. Anything goes!')
         else:
             bot.speak('The theme right now is \"{}\"'.format(roomTheme))
-    elif re.match('^top [0-9]+ djs', command):
-        # This should pull the integer out of the command that was passed
-        commandInts = [int(s) for s in command.split() if s.isdigit()]
 
-        # Make the database call, and get a list of tuples
-        # [(SongsPlayed, userID)]
-        results = getBusiestDJs(con=dbConn,cnt=commandInts[0])
-        print 'Got the following results: {}'.format(results)
+    elif re.match('^top [0-9]+ (artists|songs|albums|DJs)$',command):
+        commandInts = [int(s) for s in command.split() if s.isdigit()]
+        queryMap = {'albums':'songAlbum', 'artists':'songArtist', 'songs':'songName', 'DJs':'userID', 'djs':'userID'}
+        query = command.split()[2]
+        #print 'Got a command to look for the top {} {}'.format(commandInts[0], query)
+        results = getMostSongData(con=dbConn, cnt=commandInts[0], songItem=queryMap[query])
 
         if results:
-            bot.speak('Here are the top {} DJs'.format(commandInts[0]))
-            for rec in results:
-                print 'Processing rec: {}'.format(rec)
-                # This only works if they are in the room
-                djName = theUsersList[rec[1]]['name']
-                print 'Found DJ {}'.format(djName)
-                bot.speak('{} Songs :: {}'.format(rec[0],djName))
-                sleep(0.25)
-        else:
-            bot.speak('Apparently no one has played a song with me in the room')
+            print 'SQL returned these results: {}'.format(results)
+            speakResults(cnt=commandInts[0], item=query, recs=results)
     else:
         bot.speak('I\'m sorry, I don\'t understand the {} command'.format(command))
+
+def speakResults(cnt, item, recs):
+    print 'Got these recs:'.format(recs)
+    bot.speak('Here are the top {} {}'.format(cnt, item))
+    sleep(0.25)
+    for rec in recs:
+        thing = rec[1]
+        if item == 'DJs':
+            thing = theUsersList[rec[1]]['name']
+        bot.speak('{} {}'.format(rec[0], thing))
+        sleep(0.25)
 
 def checkDjQueue():
     # This function sucks. Need to be more clear about what is happening.
@@ -184,7 +185,7 @@ def checkDjQueue():
 def speakDjQueue():
     queuePos = 0
     for dj in djQueue:
-        djName = theUsersList[djQueue[queuePos]]
+        djName = theUsersList[djQueue[queuePos]]['name']
         bot.speak('Q: [{}]{}'.format(queuePos+1,djName))
         queuePos += 1
         sleep(0.25)
