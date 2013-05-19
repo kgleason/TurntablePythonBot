@@ -3,6 +3,9 @@ import sqlite3 as sql
 def checkDatabaseVersion(dbFile):
 	conn = sql.connect(dbFile)
 	cur = conn.cursor()
+
+	#Set the default version. The SQL below should override this
+	dbVersion = 0
 	try:
 		cur.execute('SELECT version FROM BotDbVersion')
 		row = cur.fetchone()
@@ -20,7 +23,7 @@ def checkDatabaseVersion(dbFile):
 		DROP TABLE IF EXISTS BotOperators;
 		DROP TABLE IF EXISTS DjQueue;
 		CREATE TABLE BotDbVersion (versionId INTEGER PRIMARY KEY, version INTEGER);
-		CREATE TABLE SongHistory (songHistoryId INTEGER PRIMARY KEY, songID TEXT, songPlayDateTime TEXT, userID TEXT, songLength INT);
+		CREATE TABLE SongHistory (songHistoryId INTEGER PRIMARY KEY, songID TEXT, songPlayDateTime TEXT, userID TEXT, songLength INT, songArtist TEXT, songName TEXT, songAlbum TEXT);
 		CREATE TABLE UserHistory (UserHistoryId INTEGER PRIMARY KEY, userID TEXT, seenDateTime TEXT, userName TEXT, action TEXT);
 		CREATE TABLE VotingHistory (VotingHistoryId INTEGER PRIMARY KEY, voteType TEXT, userID TEXT, songID TEXT, voteDateTime TEXT, djID TEXT);
 		CREATE TABLE SnagHistory (SnagHistoryID INTEGER PRIMARY KEY, userID TEXT, songID TEXT, snagDateTime TEXT);
@@ -45,10 +48,10 @@ def upgradeDatabase(con,ver):
 			except sql.Error, e:
 				print 'Caught a SQLite Exception: {}'.format(e)
 
-def addSongHistory(con, sid, uid, length):
+def addSongHistory(con, sid, uid, length, artist, name, album):
 	with con:
 		cur = con.cursor()
-		cur.execute("INSERT INTO SongHistory (songID, songPlayDateTime, userID, songLength) VALUES (?,datetime(\'now\'),?,?)", (sid,uid,length))
+		cur.execute("INSERT INTO SongHistory (songID, songPlayDateTime, userID, songLength, songArtist, songName, songAlbum) VALUES (?,datetime(\'now\'),?,?,?,?,?)", (sid,uid,length, artist, name, album))
 		con.commit()
 
 def addUserHistory(con, uid, uname, action):
