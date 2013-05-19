@@ -145,7 +145,7 @@ def processCommand(command,userID):
         else:
             bot.speak('The theme right now is \"{}\"'.format(roomTheme))
 
-    elif re.match('^top [0-9]+ (artists|songs|albums|DJs)$',command):
+    elif re.match('^top [0-9]+ (artists|songs|albums|DJs|djs)$',command):
         commandInts = [int(s) for s in command.split() if s.isdigit()]
         queryMap = {'albums':'songAlbum', 'artists':'songArtist', 'songs':'songName', 'DJs':'userID', 'djs':'userID'}
         query = command.split()[2]
@@ -155,6 +155,17 @@ def processCommand(command,userID):
         if results:
             print 'SQL returned these results: {}'.format(results)
             speakResults(cnt=commandInts[0], item=query, recs=results)
+        else:
+            bot.speak('Strange, I don\'t seem t have any data on the top {}'.format(query))
+    elif command == 'asshole':
+        results = getMostVoteData(con=dbConn, cnt=1, voteType='down', voteItem='userID')
+        print results
+        # results is a list of tuples: [(count, userid)]
+        if results:
+            userName = theUsersList[results[0][1]]['name']
+            bot.speak('It would appear that {} is the asshole with {} lames'.format(userName, results[0][0]))
+        else:
+            bot.speak('Apparently no one has ever hit the lame button in here!')
     else:
         bot.speak('I\'m sorry, I don\'t understand the {} command'.format(command))
 
@@ -268,19 +279,23 @@ def checkIfBotShouldDJ():
 
 def calculateAwesome(voteType=None, voterUid=None):
     if voteType == 'up':
+        print 'Got an upvote'
         if not theBopList.has_key(curSongID):
+            print 'Emptying the bopList for this song'
             theBopList[curSongID] = []
         theBopList[curSongID].append(voterUid)
+        print 'Appended this vote to the bop list'
 
     if len(theBopList[curSongID]) == (len(theUsersList))/3 and (voteType == 'up' or not voteType):
+        print 'Bop it!'
         bot.bop()
         bot.speak('This song is awesome')
 
-    if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
-        bot.snag()
-        bot.speak('I :yellow_heart: this song')
-        bot.playlistAdd(curSongID)
-        bot.becomeFan(curDjID)
+    #if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
+    #    bot.snag()
+    #    bot.speak('I :yellow_heart: this song')
+    #    bot.playlistAdd(curSongID)
+    #    bot.becomeFan(curDjID)
 
 
 def updateVotes(data):
@@ -289,6 +304,7 @@ def updateVotes(data):
     voteLog = roomMeta['votelog'][0] 
     voterUid = voteLog[0]
     voteType = voteLog[1]
+    print 'Got a {} vote from {}'.format(voteType, theUsersList[voterUid]['name'])
     calculateAwesome(voteType, voterUid)
     addVotingHistory(con=dbConn, vtype=voteType, uid=voterUid, sid=curSongID, djID=curDjID)
     addUserHistory(con=dbConn, uid=voterUid, uname=theUsersList[voterUid]['name'],action='Voted {}'.format(voteType))
