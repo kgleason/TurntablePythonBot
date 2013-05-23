@@ -71,8 +71,8 @@ def upgradeDatabase(con,ver):
 			cur.executescript("""
 				--CREATE TABLE ThemeProposals(ThemeProposalID INTEGER PRIMARY KEY, ThemeText TEXT, ProposedBy TEXT, ProposedDate TEXT)
 				--CREATE TABLE ThemeVoting(ThemeVoteID INTEGER PRIMARY KEY, ThemeProposalID INT, ThemeVoteUser TEXT, ThemeVoteDate TEXT)
-				UPDATE BotDBVersion SET version = ? WHERE version = ?",(ver,ver-1)
 			""")
+			cur.execute("UPDATE BotDBVersion SET version = ? WHERE version = ?",(ver,ver-1))
 		# This is the most recent version, nothing to do here, for now
 		print 'Database is up to date.'
 		ver += 1
@@ -174,13 +174,14 @@ def getMostVoteData(con, cnt, voteItem, voteType=None):
 def getTopVoter(con, voteType):
 	with con:
 		cur = con.cursor()
-		cur.execute("SELECT COUNT(*), userID FROM VotingHistory WHERE VoteType = ? ORDER BY 1 DESC LIMIT 1",(voteType))
-		row = cur.fetchone()
+		cur.execute("SELECT COUNT(*), userID FROM VotingHistory WHERE VoteType = ? ORDER BY 1 DESC LIMIT 1",(voteType,))
+		rows = cur.fetchall()
+		print rows
 	return rows
 
 def getTopDJVoted(con, voteType):
 	with con:
 		cur = con.cursor()
-		cur.execute("SELECT COUNT(*), DjID FROM VotingHistory WHERE VoteType = ? ORDER BY 1 DESC LIMIT 1",(voteType))
-		row = cur.fetchone()
-	return row
+		cur.execute("SELECT COUNT(*), DjID FROM VotingHistory WHERE VoteType = ? ORDER BY 1 DESC LIMIT 1",(voteType,))
+		rows = cur.fetchall()
+	return rows
