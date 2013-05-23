@@ -68,7 +68,11 @@ def upgradeDatabase(con,ver):
 		print 'Upgrading database to version {}'.format(ver)
 		with con:
 			cur = con.cursor()
-			cur.execute("UPDATE BotDBVersion SET version = ? WHERE version = ?",(ver,ver-1))
+			cur.executescript("""
+				--CREATE TABLE ThemeProposals(ThemeProposalID INTEGER PRIMARY KEY, ThemeText TEXT, ProposedBy TEXT, ProposedDate TEXT)
+				--CREATE TABLE ThemeVoting(ThemeVoteID INTEGER PRIMARY KEY, ThemeProposalID INT, ThemeVoteUser TEXT, ThemeVoteDate TEXT)
+				UPDATE BotDBVersion SET version = ? WHERE version = ?",(ver,ver-1)
+			""")
 		# This is the most recent version, nothing to do here, for now
 		print 'Database is up to date.'
 		ver += 1
@@ -101,8 +105,34 @@ def addSnagHistory(con, uid, sid):
 def addThemeHistory(con, uid, theme):
 	with con:
 		cur = con.cursor()
-		cur.execute("INSERT INTO ThemeHistory (userID, themeText, themeSetDateTime) VALUES (?,?,datetime(\'now\'))", (uid,theme))
+		cur.execute("INSERT INTO ThemeHistory (userID, themeText, themeSetDateTime) VALUES (?,?,date(\'now\'))", (uid,theme))
 		con.commit()
+
+# This theme proposal system needs more thought
+#def addThemeProposal(con, theme, uid):
+#	with con:
+#		cur = con.cursor()
+#		cur.execute("INSERT INTO ThemeProposals (ThemeText, ProposedBy, ProposedDate) VALUES (?, ?, date(\'now\'))", (theme, uid))
+#		con.commit()
+
+#def addThemeVote(con, theme, uid):
+#	with con:
+#		cur = con.cursor()
+#		cur.execute("SELECT ThemeProposalID FROM ThemeProposals WHERE ThemeText = ? AND ProposedDate"
+
+#def checkThemeVoteOK(cur, uid):
+#	with con:
+#		cur = con.cursor()
+#		cur.execute("SELECT ThemeVoteUser FROM ThemeVoting WHERE ThemeVoteUser = ? AND ThemeVoteDate = date(\'now\')", (uid))
+#		row = cur.fetchone()
+#		return row
+
+#def checkThemeProposalExists(con, theme):
+#	with con:
+#		cur = con.cursor()
+#		cur.execute("SELECT ProposedBy, ProposedDate from ThemeProposals WHERE Theme=? ORDER BY ThemeProposalID DESC LIMIT 1",(theme))
+#		row = cur.fetchone()
+#		return row
 
 def saveBotOperators(con, BotOps):
 	with con:
@@ -140,3 +170,17 @@ def getMostVoteData(con, cnt, voteItem, voteType=None):
 		rows = cur.fetchall()
 		print "SQL Returned:".format(rows)
 	return rows
+
+def getTopVoter(con, voteType):
+	with con:
+		cur = con.cursor()
+		cur.execute("SELECT COUNT(*), userID FROM VotingHistory WHERE VoteType = ? ORDER BY 1 DESC LIMIT 1",(voteType))
+		row = cur.fetchone()
+	return rows
+
+def getTopDJVoted(con, voteType):
+	with con:
+		cur = con.cursor()
+		cur.execute("SELECT COUNT(*), DjID FROM VotingHistory WHERE VoteType = ? ORDER BY 1 DESC LIMIT 1",(voteType))
+		row = cur.fetchone()
+	return row
