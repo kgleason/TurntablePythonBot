@@ -157,15 +157,42 @@ def processCommand(command,userID):
             speakResults(cnt=commandInts[0], item=query, recs=results)
         else:
             bot.speak('Strange, I don\'t seem t have any data on the top {}'.format(query))
-    elif command == 'asshole':
-        results = getMostVoteData(con=dbConn, cnt=1, voteType='down', voteItem='userID')
-        print results
+
+    elif command == 'lamer':
+        results = getTopVoter(con=dbConn, voteType='down')
+        #print results
         # results is a list of tuples: [(count, userid)]
         if results:
             userName = theUsersList[results[0][1]]['name']
-            bot.speak('It would appear that {} is the asshole with {} lames'.format(userName, results[0][0]))
+            bot.speak('It would appear that {} is the biggest lamer with {} lames'.format(userName, results[0][0]))
         else:
             bot.speak('Apparently no one has ever hit the lame button in here!')
+
+    elif command == 'awesomer':
+        results = getTopVoter(con=dbConn, voteType='up')
+        #print results
+        # results is a list of tuples: [(count, userid)]
+        if results:
+            userName = theUsersList[results[0][1]]['name']
+            bot.speak('It would appear that {} is the biggest awesomer with {} awesomes'.format(userName, results[0][0]))
+        else:
+            bot.speak('Apparently no one has ever hit the awesome button in here!')
+
+    elif command = 'awesome DJ' or command = 'best dj':
+        results = getTopDJVoted(con=dbConn,voteType='up')
+        if results:
+            userName = theUsersList[results[0][1]]['name']
+            bot.speak('It looks like {} is the most awesomest DJ, having played songs for a total of {} awesome votes'.format(userName, results[0][0]))
+        else:
+            bot.speak('Does anyone ever vote in here?')
+
+    elif command = 'lame DJ' or command = 'worst dj':
+        results = getTopDJVoted(con=dbConn,voteType='down')
+        if results:
+            userName = theUsersList[results[0][1]]['name']
+            bot.speak('It looks like {} is the most lamest DJ, having played songs for a total of {} lame votes'.format(userName, results[0][0]))
+        else:
+            bot.speak('Does anyone ever lame songs in here?')
     else:
         bot.speak('I\'m sorry, I don\'t understand the {} command'.format(command))
 
@@ -417,8 +444,8 @@ def djEscorted(data):
     addUserHistory(con=dbConn, uid=data['modid'], uname=theUsersList[data['modid']]['name'],action='Escorted someone from stage')
 
 def endSong(data):
-    print 'endsong:', roomDJs
-    print 'pos 0 in the DJ queue: {}'.format(roomDJs['0'])
+    #print 'endsong:', roomDJs
+    #print 'pos 0 in the DJ queue: {}'.format(roomDJs['0'])
     if djQueue:
         bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs['0']]['name']))
         bot.remDj(roomDJs['0'])
@@ -469,6 +496,7 @@ def privateMessage(data):
 
         elif re.match('^theme = ', message):
             roomTheme = message[8:]
+            addThemeHistory(con=dbConn, uid=userID, theme=roomTheme)
             bot.speak('{} has set the theme for this room to \"{}\"'.format(userName,roomTheme))
 
         elif message == 'pop':
