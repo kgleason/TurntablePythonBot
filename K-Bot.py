@@ -74,7 +74,7 @@ def roomChanged(data):
 def buildOpList(roomMods):
     #Run through the room mods. Just make every mod in the room an op
     for roomMod in roomMods:
-        if roomMod in theOpList:
+        if not roomMod in theOpList:
             theOpList.append(roomMod)
 
 def updateUser(data):
@@ -125,7 +125,7 @@ def processCommand(command,userID):
         giveHelp(userID)
 
     elif command == 'status':
-        if theOpList.has_key(userID):
+        if userID in theOpList:
             bot.pm('You are currently an operator',userID)
         else:
             bot.pm('You, {}, are a valued member of this room'.format(userName),userID)
@@ -158,9 +158,9 @@ def processCommand(command,userID):
         else:
             bot.speak('Strange, I don\'t seem t have any data on the top {}'.format(query))
 
-    elif command == 'lamer':
+    elif command == 'top lamer':
         results = getTopVoter(con=dbConn, voteType='down')
-        #print results
+        print results
         # results is a list of tuples: [(count, userid)]
         if results:
             userName = theUsersList[results[0][1]]['name']
@@ -168,7 +168,7 @@ def processCommand(command,userID):
         else:
             bot.speak('Apparently no one has ever hit the lame button in here!')
 
-    elif command == 'awesomer':
+    elif command == 'top awesomer':
         results = getTopVoter(con=dbConn, voteType='up')
         #print results
         # results is a list of tuples: [(count, userid)]
@@ -178,7 +178,7 @@ def processCommand(command,userID):
         else:
             bot.speak('Apparently no one has ever hit the awesome button in here!')
 
-    elif command = 'awesome DJ' or command = 'best dj':
+    elif command == 'awesome DJ' or command == 'awesome dj':
         results = getTopDJVoted(con=dbConn,voteType='up')
         if results:
             userName = theUsersList[results[0][1]]['name']
@@ -186,7 +186,7 @@ def processCommand(command,userID):
         else:
             bot.speak('Does anyone ever vote in here?')
 
-    elif command = 'lame DJ' or command = 'worst dj':
+    elif command == 'lame DJ' or command == 'lame dj':
         results = getTopDJVoted(con=dbConn,voteType='down')
         if results:
             userName = theUsersList[results[0][1]]['name']
@@ -567,7 +567,7 @@ def giveHelp(userID):
         sleep(0.5)
         #print line.rstrip()
 
-    if theOpList.has_key(userID):
+    if userID in theOpList:
         for line in opHelpMsg:
             bot.pm(line.rstrip(),userID)
             sleep(0.5)
@@ -581,10 +581,12 @@ def songSnagged(data):
     addSnagHistory(con=dbConn, uid=userID, sid=curSongID)
 
 def newModerator(data):
-    print 'New Moderator: ', data
+    global theOpList
+    theOpList.append(data['userid'])
 
 def remModerator(data):
-    print 'Removed Moderator: ', data
+    global theOpList
+    theOpList = list(filter((data['userid']).__ne__,theOpList))
 
 def initializeVars():
     # Initialize some variables here, mostly things that we need from the get go
