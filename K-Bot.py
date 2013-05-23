@@ -158,6 +158,25 @@ def processCommand(command,userID):
         else:
             bot.speak('Strange, I don\'t seem t have any data on the top {}'.format(query))
 
+    elif re.match('^seen .*$',command):
+        # Account for names with spaces in them
+        # We need to drop off the first word. Split()[1:] will return a list with the rest of the words
+        seekNames = command.split()[1:]
+        # Now we need to join that list back into a single string
+        seekName = ' '.join(seekNames)
+        print 'Looking up history for {}'.format(seekName)
+        seekID = getUserIDByName(con=dbConn, uname=seekName)
+        print 'Found ID {}'.format(seekID)
+        history = getLastUserHistoryByID(con=dbConn, uid=seekID)
+        print 'Got the following history:',history
+        if history:
+            msg = '{} was last seen doing \"{}\" on {}'.format(seekName,history[0],history[1])
+        else:
+            msg = 'I don\'t seem to have any data on {}'.format(seekName)
+        bot.speak(msg)
+        if history[2] != seekName:
+            bot.speak('{} seems to have changed their name to {}'.format(seekName,history[2]))
+
     elif command == 'top lamer':
         results = getTopVoter(con=dbConn, voteType='down')
         print results
@@ -232,7 +251,7 @@ def checkIsQualifiedToQueue(userID):
     userName = theUsersList[userID]['name']
     djInfo = {'userID':userID, 'name':userName}
     
-    if userID in roomDJs.values() or userID in djQueue:
+    if userID in roomDJs     or userID in djQueue:
         #This user is disqualified
         return False
     else:

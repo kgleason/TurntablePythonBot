@@ -185,3 +185,32 @@ def getTopDJVoted(con, voteType):
 		cur.execute("SELECT COUNT(*), DjID FROM VotingHistory WHERE VoteType = ? ORDER BY 1 DESC LIMIT 1",(voteType,))
 		rows = cur.fetchall()
 	return rows
+
+def getUserNameByID(con, uid):
+	with con:
+		cur = con.cursor()
+		cur.execute("SELECT userName FROM UserHistory WHERE userID = ? ORDER BY UserHistoryId DESC LIMIT 1",(str(uid),))
+		row = cur.fetchone()
+		print row
+		print 'Found {} for ID {}'.format(row[0],uid)
+	return row[0]
+
+def getUserIDByName(con, uname):
+	print 'Looking up {}'.format(uname)
+	with con:
+		cur = con.cursor()
+		try:
+			cur.execute("SELECT userID FROM UserHistory WHERE userName = ? ORDER BY UserHistoryId DESC LIMIT 1",(uname,))
+		except:
+			print 'SQL Exception', sys.exc_info()[0]
+		finally:
+			row = cur.fetchone()
+			print row
+	return row[0]
+
+def getLastUserHistoryByID(con, uid):
+	with con:
+		cur = con.cursor()
+		cur.execute("SELECT action, seenDateTime, userName FROM UserHistory WHERE userID = ? ORDER BY UserHistoryId DESC LIMIT 1",(str(uid),))
+		row = cur.fetchone()
+	return row
