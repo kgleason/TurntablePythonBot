@@ -431,7 +431,7 @@ def djSteppedDown(data):
 
     #If we haven't maxed out the DJ spots
     if len(roomDJs) < maxDjCount and djQueue:
-        bot.speak('A DJ spot has opened up. @{} is next in line.'.format(djQueue[0]['name']))
+        bot.speak('A DJ spot has opened up. @{} is next in line.'.format(theUsersList[djQueue[0]]['name']))
         #nextDjTimer()
 
     addUserHistory(con=dbConn, uid=data['user'][0]['userid'], uname=data['user'][0]['name'],action='Left the stage')
