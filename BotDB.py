@@ -174,7 +174,7 @@ def getMostVoteData(con, cnt, voteItem, voteType=None):
 def getTopVoter(con, voteType):
 	with con:
 		cur = con.cursor()
-		cur.execute("SELECT COUNT(*), userID FROM VotingHistory WHERE VoteType = ? ORDER BY 1 DESC LIMIT 1",(voteType,))
+		cur.execute("SELECT COUNT(*), userID FROM VotingHistory WHERE VoteType = ? GROUP BY userID ORDER BY 1 DESC LIMIT 1",(voteType,))
 		rows = cur.fetchall()
 		print rows
 	return rows
@@ -182,7 +182,7 @@ def getTopVoter(con, voteType):
 def getTopDJVoted(con, voteType):
 	with con:
 		cur = con.cursor()
-		cur.execute("SELECT COUNT(*), DjID FROM VotingHistory WHERE VoteType = ? ORDER BY 1 DESC LIMIT 1",(voteType,))
+		cur.execute("SELECT COUNT(*), DjID FROM VotingHistory WHERE VoteType = ? GROUP BY DjID ORDER BY 1 DESC LIMIT 1",(voteType,))
 		rows = cur.fetchall()
 	return rows
 
