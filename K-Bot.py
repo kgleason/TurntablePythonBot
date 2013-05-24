@@ -339,7 +339,7 @@ def calculateAwesome(voteType=None, voterUid=None):
 def updateVotes(data):
     room = data['room']
     roomMeta = room['metadata']
-    print 'Votelog: ', roomMeta['votelog']
+    print 'updateVoes data: ', data
     voteLog = roomMeta['votelog'][0] 
     voterUid = voteLog[0]
     voteType = voteLog[1]
@@ -460,7 +460,7 @@ def endSong(data):
     #print 'endsong:', roomDJs
     #print 'pos 0 in the DJ queue: {}'.format(roomDJs['0'])
     if djQueue:
-        bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs['0']]['name']))
+        #bot.speak('Since we have a DJ queue, it\'s time for @{} to step down.'.format(theUsersList[roomDJs['0']]['name']))
         bot.remDj(roomDJs['0'])
 
     checkIfBotShouldDJ()
