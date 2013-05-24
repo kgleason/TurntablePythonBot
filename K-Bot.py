@@ -339,6 +339,7 @@ def calculateAwesome(voteType=None, voterUid=None):
 def updateVotes(data):
     room = data['room']
     roomMeta = room['metadata']
+    print 'Votelog: ', roomMeta['votelog']
     voteLog = roomMeta['votelog'][0] 
     voterUid = voteLog[0]
     voteType = voteLog[1]
