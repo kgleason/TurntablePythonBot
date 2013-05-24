@@ -21,14 +21,6 @@ import sqlite3 as sql
 
 bot = Bot(myAuthKey, myUserID, defaultRoom)
 
-
-# Todo: Enforce the DJ queue
-# Command for the bot to reload the help files
-# Create a class for every global variable that we have
-# Change the djQueue from deque([{userid: name}]) to deque([userid]) and use the User List to get names (allows for people to change names?)
-# Handle the snag events
-
-
 # Define callbacks
 def roomChanged(data): 
     global theUsersList
