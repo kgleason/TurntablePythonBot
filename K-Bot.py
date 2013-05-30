@@ -352,7 +352,8 @@ def registered(data):
     global theUsersList
     user = data['user'][0]
     theUsersList[user['userid']] = user
-    bot.speak('Hello @{}. I\'m the WalMart greeter of this room. Type !help to see what I can do'.format(user['name']))
+    greeting = getEntersRoomSaying(con=dbConn)
+    bot.speak(greeting.format(user['name']))
     if roomTheme:
         processCommand('theme',myUserID)
     calculateAwesome()
@@ -645,7 +646,7 @@ initializeVars()
 bot.on('roomChanged',   roomChanged)
 bot.on('speak',         speak)
 bot.on('update_votes',  updateVotes)
-bot.on('registered',    registered )
+bot.on('registered',    registered)
 bot.on('deregistered',  deregistered)
 bot.on('newsong',       newSong)
 bot.on('endsong',       endSong)
