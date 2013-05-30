@@ -1,4 +1,5 @@
 import sqlite3 as sql
+import random
 
 def checkDatabaseVersion(dbFile):
 	conn = sql.connect(dbFile)
@@ -69,9 +70,12 @@ def upgradeDatabase(con,ver):
 		with con:
 			cur = con.cursor()
 			cur.executescript("""
+				CREATE TABLE StuffToSayWhenTheBotLikesASong (SayingID INTEGER PRIMARY KEY, Saying TEXT)
+				CREATE TABLE StuffToSayWhenSomeoneEntersOrExitsTheRoom (SayingID, PRIMARY KEY, Saying TEXT, action TEXT)
 				--CREATE TABLE ThemeProposals(ThemeProposalID INTEGER PRIMARY KEY, ThemeText TEXT, ProposedBy TEXT, ProposedDate TEXT)
 				--CREATE TABLE ThemeVoting(ThemeVoteID INTEGER PRIMARY KEY, ThemeProposalID INT, ThemeVoteUser TEXT, ThemeVoteDate TEXT)
 			""")
+			cur.executemany("INSERT INTO StuffToSayWhenTheBotLikesASong (Saying) VALUES (?)", ['This song is aweomse','This song rocks',':yellow_heart:','Oh yeah!',':fire:',':clap:'])
 			cur.execute("UPDATE BotDBVersion SET version = ? WHERE version = ?",(ver,ver-1))
 		# This is the most recent version, nothing to do here, for now
 		print 'Database is up to date.'
@@ -214,3 +218,12 @@ def getLastUserHistoryByID(con, uid):
 		cur.execute("SELECT action, seenDateTime, userName FROM UserHistory WHERE userID = ? ORDER BY UserHistoryId DESC LIMIT 1",(str(uid),))
 		row = cur.fetchone()
 	return row
+
+def getLikeSongSyaing(con):
+	with con:
+		cur = con.cursor()
+		cur.execute("SELECT Saying FROM StuffToSayWhenTheBotLikesASong")
+		rows = cur.fetchall()
+		#rows is now a list of tuples [()]
+		# So the next line will shuffle the tuples, and return the data from one of them
+	return random.shuffle(rows)[0][0]
