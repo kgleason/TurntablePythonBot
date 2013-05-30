@@ -225,6 +225,7 @@ def getLikeSongSyaing(con):
 		cur = con.cursor()
 		cur.execute("SELECT Saying FROM StuffToSayWhenTheBotLikesASong")
 		rows = cur.fetchall()
+		print rows
 		#rows is now a list of tuples [()]
 		# So the next line will shuffle the tuples, and return the data from one of them
 	return random.shuffle(rows)[0][0]
@@ -234,4 +235,5 @@ def getEntersRoomSaying(con):
 		cur = con.cursor()
 		cur.execute("SELECT Saying FROM StuffToSayWhenSomeoneEntersTheRoom")
 		rows = cur.fetchall()
+		print rows
 	return random.shuffle(rows)[0][0]
