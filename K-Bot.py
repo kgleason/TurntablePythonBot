@@ -336,11 +336,11 @@ def calculateAwesome(voteType=None, voterUid=None):
         print message
         bot.speak(message)
 
-    #if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
-    #    bot.snag()
-    #    bot.speak('I :yellow_heart: this song')
-    #    bot.playlistAdd(curSongID)
-    #    bot.becomeFan(curDjID)
+    if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
+        bot.snag()
+        bot.speak('I :yellow_heart: this song')
+        bot.playlistAdd(curSongID)
+        bot.becomeFan(curDjID)
 
 
 def updateVotes(data):
@@ -519,6 +519,7 @@ def privateMessage(data):
             bot.pm('adding {} to my default playlist'.format(curSongID),userID)
             bot.playlistAdd(curSongID)
             bot.snag()
+            bot.playlistAll(NextSongInMyQueue)
 
         elif message == 'step up':
             bot.addDj()
@@ -543,7 +544,7 @@ def privateMessage(data):
 
         elif message == 'delete next':
             bot.playlistRemove(0)
-            bot.playlistAll(NextSongInMyQueue)
+            bot.playlistAll(NextSongInMyQueueAloud)
 
         elif re.match('^theme = ', message):
             roomTheme = message[8:]
