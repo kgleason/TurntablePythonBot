@@ -5,6 +5,7 @@ from collections import deque
 from myConfig import *
 from BotDB import *
 from sys import exit
+from random import randint
 import json
 import re
 import sqlite3 as sql
@@ -57,6 +58,7 @@ def roomChanged(data):
     buildOpList(roomMods)
 
     bot.modifyLaptop('linux')
+    bot.setAvatar(randint(1,9))
     #print 'The bot has changed room.'
     #print 'The new room is {} and it allows {} max DJs'.format(roomInfo['name'],maxDjCount)
     #print 'There are currently {} DJs'.format(roomDJs)
@@ -136,6 +138,9 @@ def processCommand(command,userID):
             bot.speak('There\'s no theme right now. Anything goes!')
         else:
             bot.speak('The theme right now is \"{}\"'.format(roomTheme))
+
+    elif command == 'next':
+        bot.playlistAll(NextSongInMyQueueAloud)
 
     elif re.match('^top [0-9]+ (artists|songs|albums|DJs|djs)$',command):
         commandInts = [int(s) for s in command.split() if s.isdigit()]
@@ -398,8 +403,28 @@ def newSong(data):
 
     checkIfBotShouldDJ()
 
-    addUserHistory(con=dbConn, uid=curDjID, uname=theUsersList[curDjID]['name'],action='Played a song')
-    addSongHistory(con=dbConn, sid=curSongID, uid=curDjID, length=curSong['metadata']['length'], artist=curSong['metadata']['artist'], name=curSong['metadata']['song'], album=curSong['metadata']['album'])
+    #addUserHistory(con=dbConn, uid=curDjID, uname=theUsersList[curDjID]['name'],action='Played a song')
+    #addSongHistory(con=dbConn, sid=curSongID, uid=curDjID, length=curSong['metadata']['length'], artist=curSong['metadata']['artist'], name=curSong['metadata']['song'], album=curSong['metadata']['album'])
+
+    if curDjID == myUserID:
+        print 'My ID is the same as the current DJs'
+        bot.playlistAll(NextSongInMyQueue)
+
+def NextSongInMyQueue(data):
+    nextSongMeta = data['list'][0]['metadata']
+    nextSongName = nextSongMeta['song']
+    nextSongArtist = nextSongMeta['artist']
+
+    status = 'Next song is {} by {}'.format(nextSongName, nextSongArtist)
+    bot.modifyProfile({'website':'https://github.com/kgleason/TurntablePythonBot', 'about':status}, callback)
+
+def NextSongInMyQueueAloud(data):
+    nextSongMeta = data['list'][0]['metadata']
+    nextSongName = nextSongMeta['song']
+    nextSongArtist = nextSongMeta['artist']
+
+    bot.speak('My next song will be {} by {}'.format(nextSongName, nextSongArtist))
+
 
 def djSteppedUp(data):
     global roomDJs
@@ -475,7 +500,7 @@ def noSong(data):
     checkIfBotShouldDJ()
 
 def PlaylistToPM(data):
-    print 'playlist:', data
+    print 'playlist:', data['list'][0]['metadata']
     
 def privateMessage(data):
     global curSongID
@@ -644,6 +669,8 @@ def initializeVars():
     #Create the database connection
     dbConn = checkDatabaseVersion(dbFile)
 
+def callback(data):
+    print 'Generic callback: ',data
 
 initializeVars()
 
