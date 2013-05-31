@@ -221,18 +221,20 @@ def getLastUserHistoryByID(con, uid):
 def getLikeSongSyaing(con):
 	with con:
 		cur = con.cursor()
-		cur.execute("SELECT Saying FROM StuffToSayWhenTheBotLikesASong")
-		rows = cur.fetchall()
-		print rows
+		cur.execute("SELECT count(1) FROM StuffToSayWhenTheBotLikesASong")
+		cnt = cur.fetchone()
+		cur.execute("SELECT Saying FROM StuffToSayWhenTheBotLikesASong WHERE SayingID = ?",(randint(1,cnt[0]),))
+		row = cur.fetchone()
 		#rows is now a list of tuples [()]
 		# So the next line will shuffle the tuples, and return the data from one of them
-	return random.shuffle(rows)[0][0]
+	return row[0]
 
 def getEntersRoomSaying(con):
 	with con:
 		cur = con.cursor()
 		cur.execute("SELECT count(1) FROM StuffToSayWhenSomeoneEntersTheRoom")
 		cnt = cur.fetchone()
-		cur.execute("SELECT Saying FROM StuffToSayWhenSomeoneEntersTheRoom WHERE SayingID = ?",(randint(1,cnt),))
+		print cnt
+		cur.execute("SELECT Saying FROM StuffToSayWhenSomeoneEntersTheRoom WHERE SayingID = ?",(randint(1,cnt[0]),))
 		row = cur.fetchone()
 	return row[0]
