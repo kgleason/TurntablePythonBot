@@ -218,7 +218,7 @@ def getLastUserHistoryByID(con, uid):
 		row = cur.fetchone()
 	return row
 
-def getLikeSongSyaing(con):
+def getLikeSongSaying(con):
 	with con:
 		cur = con.cursor()
 		cur.execute("SELECT count(1) FROM StuffToSayWhenTheBotLikesASong")
@@ -234,7 +234,6 @@ def getEntersRoomSaying(con):
 		cur = con.cursor()
 		cur.execute("SELECT count(1) FROM StuffToSayWhenSomeoneEntersTheRoom")
 		cnt = cur.fetchone()
-		print cnt
 		cur.execute("SELECT Saying FROM StuffToSayWhenSomeoneEntersTheRoom WHERE SayingID = ?",(randint(1,cnt[0]),))
 		row = cur.fetchone()
 	return row[0]

@@ -327,7 +327,9 @@ def calculateAwesome(voteType=None, voterUid=None):
     if len(theBopList[curSongID]) == (len(theUsersList))/3 and (voteType == 'up' or not voteType):
         print 'Bop it!'
         bot.bop()
-        bot.speak(getLikeSongSaying(con=dbConn))
+        message = getLikeSongSaying(con=dbConn)
+        print message
+        bot.speak(message)
 
     #if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
     #    bot.snag()
