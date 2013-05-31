@@ -538,6 +538,13 @@ def privateMessage(data):
         elif message == 'die' and (userID == ownerID or userID == roomOwnerID):
             exitGracefully()
 
+        elif message == 'next':
+            bot.playlistAll(NextSongInMyQueueAloud)
+
+        elif message == 'delete next':
+            bot.playlistRemove(0)
+            bot.playlistAll(NextSongInMyQueue)
+
         elif re.match('^theme = ', message):
             roomTheme = message[8:]
             addThemeHistory(con=dbConn, uid=userID, theme=roomTheme)
