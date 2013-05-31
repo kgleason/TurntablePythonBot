@@ -1,5 +1,5 @@
 import sqlite3 as sql
-import random
+from random import randint
 
 def checkDatabaseVersion(dbFile):
 	conn = sql.connect(dbFile)
@@ -70,14 +70,12 @@ def upgradeDatabase(con,ver):
 		with con:
 			cur = con.cursor()
 			cur.executescript("""
-				CREATE TABLE StuffToSayWhenTheBotLikesASong (SayingID INTEGER PRIMARY KEY, Saying TEXT)
-				CREATE TABLE StuffToSayWhenSomeoneEntersTheRoom (SayingID, PRIMARY KEY, Saying TEXT, action TEXT)
-				--CREATE TABLE ThemeProposals(ThemeProposalID INTEGER PRIMARY KEY, ThemeText TEXT, ProposedBy TEXT, ProposedDate TEXT)
-				--CREATE TABLE ThemeVoting(ThemeVoteID INTEGER PRIMARY KEY, ThemeProposalID INT, ThemeVoteUser TEXT, ThemeVoteDate TEXT)
+				CREATE TABLE StuffToSayWhenTheBotLikesASong (SayingID INTEGER PRIMARY KEY, Saying TEXT);
+				CREATE TABLE StuffToSayWhenSomeoneEntersTheRoom (SayingID INTEGER PRIMARY KEY, Saying TEXT);
 			""")
-			cur.executemany("INSERT INTO StuffToSayWhenTheBotLikesASong (Saying) VALUES (?)", ['This song is aweomse','This song rocks',':yellow_heart:','Oh yeah!',':fire:',':clap:'])
-			cur.executemany("INSERT INTO StuffToSayWhenSomeoneEntersTheRoom (Saying) VALUES(?)", ['Welcome @{}! I\'m the Wal-Mart greeter for this room.','Hey there @{}, I\'m your friendly neighborhood bot.','@{}, I am your father.','@{}!!!!!!!!!!!!!!!!'])
-			cur.execute("UPDATE BotDBVersion SET version = ? WHERE version = ?",(ver,ver-1))
+			cur.executemany("INSERT INTO StuffToSayWhenTheBotLikesASong (Saying) VALUES (?)", [('This song is aweomse',),('This song rocks',),(':yellow_heart:',),('Oh yeah!',),(':fire:',),(':clap:',)])
+			cur.executemany("INSERT INTO StuffToSayWhenSomeoneEntersTheRoom (Saying) VALUES(?)", [('Welcome @{}! I\'m the Wal-Mart greeter for this room.',),('Hey there @{}, I\'m your friendly neighborhood bot.',),('@{}, I am your father.',),('@{}!!!!!!!!!!!!!!!!',)])
+			cur.execute("UPDATE BotDBVersion SET version = ? WHERE version = ?",(ver+1,ver-1))
 		# This is the most recent version, nothing to do here, for now
 		print 'Database is up to date.'
 		ver += 1
@@ -233,7 +231,8 @@ def getLikeSongSyaing(con):
 def getEntersRoomSaying(con):
 	with con:
 		cur = con.cursor()
-		cur.execute("SELECT Saying FROM StuffToSayWhenSomeoneEntersTheRoom")
-		rows = cur.fetchall()
-		print rows
-	return random.shuffle(rows)[0][0]
+		cur.execute("SELECT count(1) FROM StuffToSayWhenSomeoneEntersTheRoom")
+		cnt = cur.fetchone()
+		cur.execute("SELECT Saying FROM StuffToSayWhenSomeoneEntersTheRoom WHERE SayingID = ?",(randint(1,cnt),))
+		row = cur.fetchone()
+	return row[0]
