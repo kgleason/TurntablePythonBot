@@ -327,7 +327,7 @@ def calculateAwesome(voteType=None, voterUid=None):
     if len(theBopList[curSongID]) == (len(theUsersList))/3 and (voteType == 'up' or not voteType):
         print 'Bop it!'
         bot.bop()
-        bot.speak('This song is awesome')
+        bot.speak(getLikeSongSaying(con=dbConn))
 
     #if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
     #    bot.snag()
@@ -353,7 +353,10 @@ def registered(data):
     user = data['user'][0]
     theUsersList[user['userid']] = user
     greeting = getEntersRoomSaying(con=dbConn)
+    print greeting
     bot.speak(greeting.format(user['name']))
+    sleep(0.25)
+    bot.speak("Type !help to see what I can do")
     if roomTheme:
         processCommand('theme',myUserID)
     calculateAwesome()
