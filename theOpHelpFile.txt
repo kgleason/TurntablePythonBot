@@ -7,3 +7,4 @@ dq <Position#> : remove the person at <Position#> from the DJ Queue
 pop : remove the person in first place in the DJ Queue. The same as 'dq 1'
 theme = <room theme> : set & announce the theme for the room
 die : cause the python process to exit. Can only be executed by the owner.
+delete next : the next next song in the Bot's queue. This will cause the bot to update it's profile.
