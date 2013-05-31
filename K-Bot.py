@@ -403,8 +403,8 @@ def newSong(data):
 
     checkIfBotShouldDJ()
 
-    #addUserHistory(con=dbConn, uid=curDjID, uname=theUsersList[curDjID]['name'],action='Played a song')
-    #addSongHistory(con=dbConn, sid=curSongID, uid=curDjID, length=curSong['metadata']['length'], artist=curSong['metadata']['artist'], name=curSong['metadata']['song'], album=curSong['metadata']['album'])
+    addUserHistory(con=dbConn, uid=curDjID, uname=theUsersList[curDjID]['name'],action='Played a song')
+    addSongHistory(con=dbConn, sid=curSongID, uid=curDjID, length=curSong['metadata']['length'], artist=curSong['metadata']['artist'], name=curSong['metadata']['song'], album=curSong['metadata']['album'])
 
     if curDjID == myUserID:
         print 'My ID is the same as the current DJs'
@@ -639,6 +639,10 @@ def newModerator(data):
 def remModerator(data):
     global theOpList
     theOpList = list(filter((data['userid']).__ne__,theOpList))
+    if data['userid'] == myUserID:
+        for op in theOpList:
+            print "Altering {} that my room moderator was taken away.".format(theUsersList[op]['name'])
+            bot.pm('Somone just removed my room moderator privileges. Please help!',op)
 
 def initializeVars():
     # Initialize some variables here, mostly things that we need from the get go
