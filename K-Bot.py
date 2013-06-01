@@ -150,7 +150,7 @@ def processCommand(command,userID):
         results = getMostSongData(con=dbConn, cnt=commandInts[0], songItem=queryMap[query], ignoreID=myUserID)
 
         if results:
-            print 'SQL returned these results: {}'.format(results)
+            #print 'SQL returned these results: {}'.format(results)
             speakResults(cnt=commandInts[0], item=query, recs=results)
         else:
             bot.speak('Strange, I don\'t seem t have any data on the top {}'.format(query))

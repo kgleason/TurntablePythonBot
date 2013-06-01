@@ -154,7 +154,8 @@ def saveDjQueue(con, djQueue):
 def getMostSongData(con, cnt, songItem, ignoreID):
 	with con:
 		cur = con.cursor()
-		qText="SELECT COUNT(*), {} FROM SongHistory WHERE DjID != ? GROUP BY {} ORDER BY 1 DESC LIMIT {}".format(songItem,songItem,str(cnt))
+		qText="SELECT COUNT(*), {} FROM SongHistory WHERE userID != ? GROUP BY {} ORDER BY 1 DESC LIMIT {}".format(songItem,songItem,str(cnt))
+		#print qText
 		cur.execute(qText,(ignoreID,))
 		rows = cur.fetchall()
 	return rows
