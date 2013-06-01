@@ -10,16 +10,6 @@ import json
 import re
 import sqlite3 as sql
 
-# There should be a file in the same directory as the bot
-# that is named myConfig.py. This file shold contain some
-# variables that we need to connect to tt.fm
-# For example:
-# myUserID      = 'XXXXXX'
-# myAuthKet     = 'XXXXXX'
-# defaultRoom   = 'XXXXXX'
-# ownerID       = 'XXXXXX'
-# dbFile        = '<BotName>.sqlite'
-
 bot = Bot(myAuthKey, myUserID, defaultRoom)
 
 # Define callbacks
