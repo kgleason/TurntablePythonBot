@@ -109,10 +109,7 @@ def processCommand(command,userID):
         bot.speak("Please visit {} and read the README to find a list of commands".format(helpURL))
 
     elif command == 'status':
-        if userID in theOpList:
-            bot.pm('You are currently an operator',userID)
-        else:
-            bot.pm('You, {}, are a valued member of this room'.format(userName),userID)
+        getUserStatus(userID)
 
     elif command == 'ql' or command == 'queue list':
         checkDjQueue()
@@ -517,6 +514,9 @@ def privateMessage(data):
 
     if message == 'help':
         bot.pm('Please visit {} and read the README to get help'.format(helpURL),userID)
+
+    elif message == 'status':
+        getUserStatus(userID=userID)
     
     # If the person sending the PMs is an Op ....
     elif userID in theOpList:
@@ -650,6 +650,12 @@ def remModerator(data):
         for op in theOpList:
             print "Altering {} that my room moderator was taken away.".format(theUsersList[op]['name'])
             bot.pm('Somone just removed my room moderator privileges. Please help!',op)
+
+def getUserStatus(userID):
+        if userID in theOpList:
+            bot.pm('You are currently an operator',userID)
+        else:
+            bot.pm('You, {}, are a valued member of this room'.format(userName),userID)
 
 def initializeVars():
     # Initialize some variables here, mostly things that we need from the get go
