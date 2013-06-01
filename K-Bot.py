@@ -190,7 +190,7 @@ def processCommand(command,userID):
     elif command == 'awesome DJ' or command == 'awesome dj':
         results = getTopDJVoted(con=dbConn,voteType='up',ignoreID=myUserID)
         if results:
-            userName = theUsersList[results[0][1]]['name']
+            userName = getUserNameByID(con=dbConn, uid=results[0][1])
             bot.speak('It looks like {} is the most awesomest DJ, having played songs for a total of {} awesome votes'.format(userName, results[0][0]))
         else:
             bot.speak('Does anyone ever vote in here?')
@@ -198,7 +198,7 @@ def processCommand(command,userID):
     elif command == 'lame DJ' or command == 'lame dj':
         results = getTopDJVoted(con=dbConn,voteType='down',ignoreID=myUserID)
         if results:
-            userName = theUsersList[results[0][1]]['name']
+            userName = getUserNameByID(con=dbConn, uid=results[0][1])
             bot.speak('It looks like {} is the most lamest DJ, having played songs for a total of {} lame votes'.format(userName, results[0][0]))
         else:
             bot.speak('Does anyone ever lame songs in here?')
