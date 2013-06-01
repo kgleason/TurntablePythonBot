@@ -112,11 +112,11 @@ def processCommand(command,userID):
     elif command == 'suck it':
         bot.speak('Whoa there. Just go ahead and settle down {}!'.format(userName))
 
-    elif command == 'user count':
+    elif command == 'crowd':
         bot.speak('There are {} people jamming in here'.format(str(len(theUsersList))))
 
     elif command == 'help':
-        giveHelp(userID)
+        bot.speak("Please visit {} and read the README to find a list of commands".format(helpURL))
 
     elif command == 'status':
         if userID in theOpList:
@@ -142,7 +142,7 @@ def processCommand(command,userID):
     elif command == 'next':
         bot.playlistAll(NextSongInMyQueueAloud)
 
-    elif re.match('^top [0-9]+ (artists|songs|albums|DJs|djs)$',command):
+    elif re.match('^top [0-9]+ (artists|songs|albums|djs)$',command,re.IGNORECASE):
         commandInts = [int(s) for s in command.split() if s.isdigit()]
         queryMap = {'albums':'songAlbum', 'artists':'songArtist', 'songs':'songName', 'DJs':'userID', 'djs':'userID'}
         query = command.split()[2]
@@ -522,8 +522,14 @@ def privateMessage(data):
     message = data['text']
     print 'Got a PM from {}: "{}"'.format(userName,message)
 
+    #Check for the command prefixes. Strip them if they are present
+    message = re.sub('^[!+/]','',message)
+
+    if message == 'help':
+        bot.pm('Please visit {} and read the README to get help'.format(helpURL),userID)
+    
     # If the person sending the PMs is an Op ....
-    if userID in theOpList:
+    elif userID in theOpList:
         if message == 'bop':
             bot.bop()
 
@@ -544,9 +550,6 @@ def privateMessage(data):
 
         elif message == 'playlist':
             bot.playlistAll(PlaylistToPM)
-
-        elif message == 'help':
-            giveHelp(userID)
 
         elif message == 'die' and (userID == ownerID or userID == roomOwnerID):
             exitGracefully()
