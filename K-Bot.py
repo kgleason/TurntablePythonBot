@@ -372,6 +372,7 @@ def registered(data):
     theUsersList[user['userid']] = user
     greeting = getEntersRoomSaying(con=dbConn)
     print greeting
+    sleep(0.1)
     bot.speak(greeting.format(user['name']))
     sleep(0.25)
     bot.speak("Type !help to see what I can do")
