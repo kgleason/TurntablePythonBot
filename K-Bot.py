@@ -147,7 +147,7 @@ def processCommand(command,userID):
         queryMap = {'albums':'songAlbum', 'artists':'songArtist', 'songs':'songName', 'DJs':'userID', 'djs':'userID'}
         query = command.split()[2]
         #print 'Got a command to look for the top {} {}'.format(commandInts[0], query)
-        results = getMostSongData(con=dbConn, cnt=commandInts[0], songItem=queryMap[query])
+        results = getMostSongData(con=dbConn, cnt=commandInts[0], songItem=queryMap[query], ignoreID=myUserID)
 
         if results:
             print 'SQL returned these results: {}'.format(results)
@@ -175,27 +175,20 @@ def processCommand(command,userID):
             bot.speak('{} seems to have changed their name to {}'.format(seekName,history[2]))
 
     elif command == 'top lamer':
-        results = getTopVoter(con=dbConn, voteType='down')
-        print results
-        # results is a list of tuples: [(count, userid)]
-        if results:
-            userName = theUsersList[results[0][1]]['name']
-            bot.speak('It would appear that {} is the biggest lamer with {} lames'.format(userName, results[0][0]))
-        else:
-            bot.speak('Apparently no one has ever hit the lame button in here!')
+        bot.speak("For privacy reasons, TurnTable won\' allow me to track lames by user.")
 
     elif command == 'top awesomer':
-        results = getTopVoter(con=dbConn, voteType='up')
-        #print results
+        results = getTopVoter(con=dbConn, voteType='up',ignoreID=myUserID)
         # results is a list of tuples: [(count, userid)]
         if results:
-            userName = theUsersList[results[0][1]]['name']
+            #userName = theUsersList[results[0][1]]['name']
+            userName = getUserNameByID(con=dbConn, uid=results[0][1])
             bot.speak('It would appear that {} is the biggest awesomer with {} awesomes'.format(userName, results[0][0]))
         else:
             bot.speak('Apparently no one has ever hit the awesome button in here!')
 
     elif command == 'awesome DJ' or command == 'awesome dj':
-        results = getTopDJVoted(con=dbConn,voteType='up')
+        results = getTopDJVoted(con=dbConn,voteType='up',ignoreID=myUserID)
         if results:
             userName = theUsersList[results[0][1]]['name']
             bot.speak('It looks like {} is the most awesomest DJ, having played songs for a total of {} awesome votes'.format(userName, results[0][0]))
@@ -203,7 +196,7 @@ def processCommand(command,userID):
             bot.speak('Does anyone ever vote in here?')
 
     elif command == 'lame DJ' or command == 'lame dj':
-        results = getTopDJVoted(con=dbConn,voteType='down')
+        results = getTopDJVoted(con=dbConn,voteType='down',ignoreID=myUserID)
         if results:
             userName = theUsersList[results[0][1]]['name']
             bot.speak('It looks like {} is the most lamest DJ, having played songs for a total of {} lame votes'.format(userName, results[0][0]))
@@ -557,7 +550,9 @@ def privateMessage(data):
             checkDjQueue()
 
         elif re.match('^dq [0-9]*$',message):
+            print message[3:]
             popPos = int(message[3:])-1
+            print 'Removing dj in position {}'.format(popPos)
             dqUserId = djQueue[popPos]['userID']
             print 'Attmepting to remove {} from q{}'.format(dqUserId,popPos)
             bot.speak('Yanking {} from the queue. {} made me do it!'.format(theUsersList[dqUserId]['name'],userName))

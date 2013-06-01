@@ -151,11 +151,11 @@ def saveDjQueue(con, djQueue):
 		cur.executemany("INSERT INTO DjQueue (userID) VALUES (?)",(djQueue))
 		cur.commit()
 
-def getMostSongData(con, cnt, songItem):
+def getMostSongData(con, cnt, songItem, ignoreID):
 	with con:
 		cur = con.cursor()
-		qText="SELECT COUNT(*), {} FROM SongHistory GROUP BY {} ORDER BY 1 DESC LIMIT {}".format(songItem,songItem,str(cnt))
-		cur.execute(qText)
+		qText="SELECT COUNT(*), {} FROM SongHistory WHERE DjID != ? GROUP BY {} ORDER BY 1 DESC LIMIT {}".format(songItem,songItem,str(cnt))
+		cur.execute(qText,(ignoreID,))
 		rows = cur.fetchall()
 	return rows
 
@@ -174,18 +174,19 @@ def getMostVoteData(con, cnt, voteItem, voteType=None):
 		print "SQL Returned:".format(rows)
 	return rows
 
-def getTopVoter(con, voteType):
+def getTopVoter(con, voteType, ignoreID):
+	print 'Finding the top awesomer'
 	with con:
 		cur = con.cursor()
-		cur.execute("SELECT COUNT(*), userID FROM VotingHistory WHERE VoteType = ? GROUP BY userID ORDER BY 1 DESC LIMIT 1",(voteType,))
+		cur.execute("SELECT COUNT(*), userID FROM VotingHistory WHERE VoteType = ? AND userID != ? GROUP BY userID ORDER BY 1 DESC LIMIT 1",(voteType,ignoreID))
 		rows = cur.fetchall()
 		print rows
 	return rows
 
-def getTopDJVoted(con, voteType):
+def getTopDJVoted(con, voteType, ignoreID):
 	with con:
 		cur = con.cursor()
-		cur.execute("SELECT COUNT(*), DjID FROM VotingHistory WHERE VoteType = ? GROUP BY DjID ORDER BY 1 DESC LIMIT 1",(voteType,))
+		cur.execute("SELECT COUNT(*), DjID FROM VotingHistory WHERE VoteType = ? AND DjID != ? GROUP BY DjID ORDER BY 1 DESC LIMIT 1",(voteType,ignoreID))
 		rows = cur.fetchall()
 	return rows
 
