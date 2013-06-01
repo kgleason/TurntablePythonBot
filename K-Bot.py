@@ -211,8 +211,9 @@ def speakResults(cnt, item, recs):
     sleep(0.25)
     for rec in recs:
         thing = rec[1]
-        if item == 'DJs':
-            thing = theUsersList[rec[1]]['name']
+        if re.match(item,'DJs',re.IGNORECASE):
+            thing = getUserNameByID(con=dbConn,uid=rec[1])
+            #thing = theUsersList[rec[1]]['name']
         bot.speak('{} {}'.format(rec[0], thing))
         sleep(0.25)
 
@@ -238,38 +239,55 @@ def speakDjQueue():
         sleep(0.25)
 
 def checkIsQualifiedToQueue(userID):
-    userName = theUsersList[userID]['name']
-    djInfo = {'userID':userID, 'name':userName}
-    
-    if userID in roomDJs     or userID in djQueue:
+    print 'userID = {}'.format(userID)
+    print 'roomDJs = {}'.format(roomDJs)
+    print 'djQueue = {}'.format(djQueue)
+    if userID in roomDJs.values() or userID in djQueue:
         #This user is disqualified
+        print "checkIsQualifiedToQueue returning False"
         return False
     else:
+        print "checkIsQualifiedToQueue returning True"
         return True
     
 def checkIsQueueNeeded():
+    print 'djQueue = {}'.format(djQueue)
     if djQueue:
+        print 'checkIsQueueNeeded returning True'
         return True
-    elif not djQueue and len(roomDJs) == maxDjCount:
+    elif not djQueue and (len(roomDJs) == maxDjCount):
+        print 'checkIsQueueNeeded returning True'
         return True
     else:
+        print 'checkIsQueueNeeded returning True'
         return False
 
 def addToDJQueue(userID, name):
-    userName = theUsersList[userID]['name']
-    djInfo = {'userID':userID, 'name':userName}
-    
+    userName = getUserNameByID(con=dbConn, uid=userID)
     # In order to add to the queue, the person should not be on stage or in the queue already
     # Start by checking qualfications
-    if checkIsQualifiedToQueue(userID) and checkIsQueueNeeded():
-        print 'Adding {} to the queue'.format(userName)
-        djQueue.append(userID)
-    elif not checkIsQualifiedToQueue(userID):
-        bot.speak('@{}, you are not qualified to get in the queue right now'.format(userName))
-    elif not checkIsQueueNeeded():
-        checkDjQueue()
+
+    #Case 1: User is qualified for the queue & the queue is needed
+    if checkIsQualifiedToQueue(userID):
+        if checkIsQueueNeeded():
+            print 'Adding {} to the queue'.format(userName)
+            djQueue.append(userID)
+        #If we don't need a queue, then tell them
+        else:
+            checkDjQueue()
+    #If they are not qualified, then tell them
     else:
-        bot.speak('How did I get here? What the :poop:')
+        bot.speak('@{}, you are not qualified to get into the queue right now'.format(userName))
+
+    #if checkIsQualifiedToQueue(userID) and checkIsQueueNeeded():
+        #print 'Adding {} to the queue'.format(userName)
+        #djQueue.append(userID)
+    #elif not checkIsQualifiedToQueue(userID):
+        #bot.speak('@{}, you are not qualified to get in the queue right now'.format(userName))
+    #elif not checkIsQueueNeeded():
+        #checkDjQueue()
+    #else:
+        #bot.speak('How did I get here? What the :poop:')
 
     speakDjQueue()
 
