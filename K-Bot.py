@@ -190,7 +190,7 @@ def processCommand(command,userID):
         else:
             bot.speak('Does anyone ever lame songs in here?')
     else:
-        bot.speak('I\'m sorry, I don\'t understand the {} command'.format(command))
+        bot.speak('Hodor!'.format(command))
 
 def speakResults(cnt, item, recs):
     print 'Got these recs:'.format(recs)
@@ -562,10 +562,11 @@ def privateMessage(data):
             checkDjQueue()
 
         elif re.match('^dq [0-9]*$',message):
-            print message[3:]
+            #print message[3:]
             popPos = int(message[3:])-1
             print 'Removing dj in position {}'.format(popPos)
-            dqUserId = djQueue[popPos]['userID']
+            print djQueue[popPos]
+            dqUserId = djQueue[popPos]
             print 'Attmepting to remove {} from q{}'.format(dqUserId,popPos)
             bot.speak('Yanking {} from the queue. {} made me do it!'.format(theUsersList[dqUserId]['name'],userName))
             removeFromDJQueue(userID=dqUserId,botOp=userID)
