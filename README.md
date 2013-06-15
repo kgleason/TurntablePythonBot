@@ -52,6 +52,7 @@ ownerID 	= 'OOOOOOOOOOOOOOOOOOOOOOOO'	# The user ID of the bots owner. There are
 defaultRoom	= 'RRRRRRRRRRRRRRRRRRRRRRRR'	# The TurnTable ID of the room that you want your bot to join. As of right now, this is the only way to get a bot into a room.
 dbFile		= 'BotDB.sqlite'				# The name of the database file to use for the bot. This will be created if it doesn't exist. You can leave this as it, or rename it.
 helpURL		= 'https://github.com/kgleason/TurntablePythonBot'	# A URL to print out when users ask for help. The default is to show this page. Change it as you wish.
+autoBopForOwner = False  # If this is true, then the bot will automatically bop for any song that it's owner plays. Careful with this, cause turntable frowns on it.
 ```
 
 If you don't know how to find all of those IDs, then please have a look at [this bookmarklet](http://alaingilbert.github.com/Turntable-API/bookmarklet.html)

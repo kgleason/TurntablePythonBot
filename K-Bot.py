@@ -406,8 +406,11 @@ def newSong(data):
     addSongHistory(con=dbConn, sid=curSongID, uid=curDjID, length=curSong['metadata']['length'], artist=curSong['metadata']['artist'], name=curSong['metadata']['song'], album=curSong['metadata']['album'])
 
     if curDjID == myUserID:
-        print 'My ID is the same as the current DJs'
+        #print 'My ID is the same as the current DJs'
         bot.playlistAll(NextSongInMyQueue)
+        
+    if autoBopForOwner and curDjID == ownerID:
+        bot.bop() 
 
 def NextSongInMyQueue(data):
     nextSongMeta = data['list'][0]['metadata']
