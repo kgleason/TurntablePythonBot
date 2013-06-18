@@ -189,6 +189,12 @@ def processCommand(command,userID):
             bot.speak('It looks like {} is the most lamest DJ, having played songs for a total of {} lame votes'.format(userName, results[0][0]))
         else:
             bot.speak('Does anyone ever lame songs in here?')
+    elif command == 'seed':
+        results = getSongSeedData(con=dbConn, songID=curSongID)
+        if results:
+            bot.speak("This song was originally seeded on {} by {}. It has been played {} times, receiving a total of {} awesomes and has been snagged {} times".format(results["firstPlayDate"], results["userName"], results["totalPlays"], results["totalLikes"], results["totalSnags"]))
+        else:
+            bot.speak("This is the first time that this song has been played since I've been tracking.")
     else:
         bot.speak('Hodor!'.format(command))
 

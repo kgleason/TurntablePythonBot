@@ -239,3 +239,55 @@ def getEntersRoomSaying(con):
 		cur.execute("SELECT Saying FROM StuffToSayWhenSomeoneEntersTheRoom WHERE SayingID = ?",(randint(1,cnt[0]),))
 		row = cur.fetchone()
 	return row[0]
+    
+def getSongSeedData(con, songID):
+    with con:
+        print "Looking up song {}".format(songID)
+        result = {}
+        cur = con.cursor()
+        cur.execute("SELECT songPlayDateTime, userID FROM SongHistory WHERE songID = ? ORDER BY songHistoryId ASC LIMIT 1",(songID,))
+        #row should be DateTime & userID
+        row = cur.fetchone()
+        
+        #print "Seed result query 1:",row
+        if row:
+            result['firstPlayDate'] = row[0]
+            result['userID'] = row[1]
+        
+            #Convert UserID to Name
+            cur.execute("SELECT userName FROM UserHistory WHERE userID = ? ORDER BY userHistoryID DESC LIMIT 1",(result["userID"],))
+            row = cur.fetchone()
+            
+            if row:
+                result['userName'] = row[0]
+            else:
+                result['userName'] = 'Unknown'
+        
+            #Get total plays
+            cur.execute("SELECT COUNT(1) FROM SongHistory WHERE songID = ?",(songID,))
+            row = cur.fetchone()
+            if row:
+                result['totalPlays'] = row[0]
+            else:
+                result['totalPlays'] = 0
+        
+            #Get total likes
+            cur.execute("SELECT COUNT(1) FROM VotingHistory WHERE songID = ? AND voteType = ?",(songID,'up'))
+            row = cur.fetchone()
+            if row:
+                result['totalLikes'] = row[0]
+            else:
+                result['totalLikes'] = 0
+
+            #Get total snags
+            cur.execute("SELECT COUNT(1) FROM SnagHistory WHERE songID = ?",(songID,))
+            row = cur.fetchone()
+            if row:        
+                result['totalSnags'] = row[0]
+            else:
+                result['totalSnags'] = 0
+        else:
+            result = None
+        
+
+    return result

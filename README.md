@@ -27,6 +27,7 @@ Here is a list of the commands that this bot will accept from the public chat. I
 + `!awesome DJ` : Get the name of the DJ that has received the most awesome votes.
 + `!lame DJ` : Get the name of the DJ that has received the most lame votes.
 + `!top X [artists|songs|albums|djs]` :  Get some stats. For example `!top 5 djs` will return the names of the DJs that have played the most songs.
++ `!seed` : Get some information about the current song: The first time the song was played, how many times it has been played since, how many awesomes and snags will all be reported.
 
 ## Private commands
 
