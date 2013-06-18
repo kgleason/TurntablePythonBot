@@ -16,3 +16,4 @@ theOpList.json
 myConfig.py
 *.pyc
 *.sqlite
+*.db
