@@ -379,16 +379,9 @@ def deregistered(data):
     user = data['user'][0]
     del theUsersList[user['userid']]
     bot.speak('Bummer that {} left.'.format(user['name'])) 
-    if djQueue:
-        djInfo = {'userID':user['userid'], 'name':user['name']}
-        print djInfo
-        if djInfo in djQueue:
-            djQueue.remove(djInfo)
-            print 'Removed {} from the djQueue'.format(djInfo)
-        else:
-            print '{} was not in the djQueue'.format(user['name'])
-    else:
-        print 'No djQueue'
+    if djQueue and user['userid'] in djQueue:
+        djQueue.remove(user['userid'])
+        print 'Removed {} from the djQueue'.format(user['userid'])
     calculateAwesome() 
     addUserHistory(con=dbConn, uid=user['userid'], uname=user['name'],action='Exited')
 
