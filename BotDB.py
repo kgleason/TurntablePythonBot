@@ -83,39 +83,39 @@ def upgradeDatabase(con,ver):
 def addSongHistory(con, sid, uid, length, artist, name, album):
 	with con:
 		cur = con.cursor()
-		cur.execute("INSERT INTO SongHistory (songID, songPlayDateTime, userID, songLength, songArtist, songName, songAlbum) VALUES (?,datetime(\'now\'),?,?,?,?,?)", (sid,uid,length, artist, name, album))
+		cur.execute("INSERT INTO SongHistory (songID, songPlayDateTime, userID, songLength, songArtist, songName, songAlbum) VALUES (?,datetime(\'now\',\'localtime\'),?,?,?,?,?)", (sid,uid,length, artist, name, album))
 		con.commit()
 
 def addUserHistory(con, uid, uname, action):
 	with con:
 		cur = con.cursor()
-		cur.execute("INSERT INTO UserHistory (userID, seenDateTime, userName, action) VALUES (?,datetime(\'now\'),?,?)", (uid,uname,action))
+		cur.execute("INSERT INTO UserHistory (userID, seenDateTime, userName, action) VALUES (?,datetime(\'now\',\'localtime\'),?,?)", (uid,uname,action))
 		con.commit()
 
 def addVotingHistory(con, vtype, uid, sid, djID):
 	with con:
 		cur = con.cursor()
-		print "INSERT INTO VotingHistory (voteType, userID, songID, djID, voteDateTime) VALUES ({},{},{},{},datetime(\'now\'))".format(vtype,uid,sid,djID)
-		cur.execute("INSERT INTO VotingHistory (voteType, userID, songID, djID, voteDateTime) VALUES (?,?,?,?,datetime(\'now\'))", (vtype,uid,sid,djID))
+		print "INSERT INTO VotingHistory (voteType, userID, songID, djID, voteDateTime) VALUES ({},{},{},{},datetime(\'now\',\'localtime\'))".format(vtype,uid,sid,djID)
+		cur.execute("INSERT INTO VotingHistory (voteType, userID, songID, djID, voteDateTime) VALUES (?,?,?,?,datetime(\'now\',\'localtime\'))", (vtype,uid,sid,djID))
 		con.commit()
 
 def addSnagHistory(con, uid, sid):
 	with con:
 		cur = con.cursor()
-		cur.execute("INSERT INTO SnagHistory (userID, songID, snagDateTime) VALUES (?,?,datetime(\'now\'))", (uid,sid))
+		cur.execute("INSERT INTO SnagHistory (userID, songID, snagDateTime) VALUES (?,?,datetime(\'now\',\'localtime\'))", (uid,sid))
 		con.commit()
 
 def addThemeHistory(con, uid, theme):
 	with con:
 		cur = con.cursor()
-		cur.execute("INSERT INTO ThemeHistory (userID, themeText, themeSetDateTime) VALUES (?,?,date(\'now\'))", (uid,theme))
+		cur.execute("INSERT INTO ThemeHistory (userID, themeText, themeSetDateTime) VALUES (?,?,date(\'now\',\'localtime\'))", (uid,theme))
 		con.commit()
 
 # This theme proposal system needs more thought
 #def addThemeProposal(con, theme, uid):
 #	with con:
 #		cur = con.cursor()
-#		cur.execute("INSERT INTO ThemeProposals (ThemeText, ProposedBy, ProposedDate) VALUES (?, ?, date(\'now\'))", (theme, uid))
+#		cur.execute("INSERT INTO ThemeProposals (ThemeText, ProposedBy, ProposedDate) VALUES (?, ?, date(\'now\',\'localtime\'))", (theme, uid))
 #		con.commit()
 
 #def addThemeVote(con, theme, uid):
@@ -126,7 +126,7 @@ def addThemeHistory(con, uid, theme):
 #def checkThemeVoteOK(cur, uid):
 #	with con:
 #		cur = con.cursor()
-#		cur.execute("SELECT ThemeVoteUser FROM ThemeVoting WHERE ThemeVoteUser = ? AND ThemeVoteDate = date(\'now\')", (uid))
+#		cur.execute("SELECT ThemeVoteUser FROM ThemeVoting WHERE ThemeVoteUser = ? AND ThemeVoteDate = date(\'now\',\'localtime\')", (uid))
 #		row = cur.fetchone()
 #		return row
 
@@ -154,7 +154,7 @@ def saveDjQueue(con, djQueue):
 def getMostSongData(con, cnt, songItem, ignoreID):
 	with con:
 		cur = con.cursor()
-		qText="SELECT COUNT(*), {} FROM SongHistory WHERE userID != ? GROUP BY {} ORDER BY 1 DESC LIMIT {}".format(songItem,songItem,str(cnt))
+		qText="SELECT COUNT(1), {} FROM SongHistory WHERE userID != ? GROUP BY {} ORDER BY 1 DESC LIMIT {}".format(songItem,songItem,str(cnt))
 		#print qText
 		cur.execute(qText,(ignoreID,))
 		rows = cur.fetchall()
@@ -163,7 +163,7 @@ def getMostSongData(con, cnt, songItem, ignoreID):
 def getMostVoteData(con, cnt, voteItem, voteType=None):
 	with con:
 		cur = con.cursor()
-		qText="SELECT COUNT(*), {} FROM VotingHistory ".format(voteItem)
+		qText="SELECT COUNT(1), {} FROM VotingHistory ".format(voteItem)
 		if voteType:
 			qText += "WHERE voteType = ? "
 		qText += "GROUP BY {} ORDER BY 1 DESC LIMIT ?".format(voteItem)
@@ -179,7 +179,7 @@ def getTopVoter(con, voteType, ignoreID):
 	print 'Finding the top awesomer'
 	with con:
 		cur = con.cursor()
-		cur.execute("SELECT COUNT(*), userID FROM VotingHistory WHERE VoteType = ? AND userID != ? GROUP BY userID ORDER BY 1 DESC LIMIT 1",(voteType,ignoreID))
+		cur.execute("SELECT COUNT(1), userID FROM VotingHistory WHERE VoteType = ? AND userID != ? GROUP BY userID ORDER BY 1 DESC LIMIT 1",(voteType,ignoreID))
 		rows = cur.fetchall()
 		print rows
 	return rows
@@ -187,7 +187,7 @@ def getTopVoter(con, voteType, ignoreID):
 def getTopDJVoted(con, voteType, ignoreID):
 	with con:
 		cur = con.cursor()
-		cur.execute("SELECT COUNT(*), DjID FROM VotingHistory WHERE VoteType = ? AND DjID != ? GROUP BY DjID ORDER BY 1 DESC LIMIT 1",(voteType,ignoreID))
+		cur.execute("SELECT COUNT(1), DjID FROM VotingHistory WHERE VoteType = ? AND DjID != ? GROUP BY DjID ORDER BY 1 DESC LIMIT 1",(voteType,ignoreID))
 		rows = cur.fetchall()
 	return rows
 

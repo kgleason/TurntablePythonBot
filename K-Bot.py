@@ -356,8 +356,9 @@ def updateVotes(data):
     voteType = voteLog[1]
     print 'Got a {} vote from {}'.format(voteType, theUsersList[voterUid]['name'])
     calculateAwesome(voteType, voterUid)
-    addVotingHistory(con=dbConn, vtype=voteType, uid=voterUid, sid=curSongID, djID=curDjID)
-    addUserHistory(con=dbConn, uid=voterUid, uname=theUsersList[voterUid]['name'],action='Voted {}'.format(voteType))
+    if voterUid != myUserID:
+        addVotingHistory(con=dbConn, vtype=voteType, uid=voterUid, sid=curSongID, djID=curDjID)
+        addUserHistory(con=dbConn, uid=voterUid, uname=theUsersList[voterUid]['name'],action='Voted {}'.format(voteType))
 
 def registered(data):  
     global theUsersList
@@ -372,7 +373,8 @@ def registered(data):
     if roomTheme:
         processCommand('theme',myUserID)
     calculateAwesome()
-    addUserHistory(con=dbConn, uid=user['userid'], uname=user['name'],action='Entered')
+    if user['userid'] != myUserID:
+        addUserHistory(con=dbConn, uid=user['userid'], uname=user['name'],action='Entered')
 
 def deregistered(data):
     global theUsersList
@@ -382,8 +384,9 @@ def deregistered(data):
     if djQueue and user['userid'] in djQueue:
         djQueue.remove(user['userid'])
         print 'Removed {} from the djQueue'.format(user['userid'])
-    calculateAwesome() 
-    addUserHistory(con=dbConn, uid=user['userid'], uname=user['name'],action='Exited')
+    calculateAwesome()
+    if user['userid'] != myUserID: 
+        addUserHistory(con=dbConn, uid=user['userid'], uname=user['name'],action='Exited')
 
 def newSong(data):
     global curSongID
@@ -401,12 +404,12 @@ def newSong(data):
 
     checkIfBotShouldDJ()
 
-    addUserHistory(con=dbConn, uid=curDjID, uname=theUsersList[curDjID]['name'],action='Played a song')
-    addSongHistory(con=dbConn, sid=curSongID, uid=curDjID, length=curSong['metadata']['length'], artist=curSong['metadata']['artist'], name=curSong['metadata']['song'], album=curSong['metadata']['album'])
-
     if curDjID == myUserID:
         #print 'My ID is the same as the current DJs'
         bot.playlistAll(NextSongInMyQueue)
+    else:
+        addUserHistory(con=dbConn, uid=curDjID, uname=theUsersList[curDjID]['name'],action='Played a song')
+        addSongHistory(con=dbConn, sid=curSongID, uid=curDjID, length=curSong['metadata']['length'], artist=curSong['metadata']['artist'], name=curSong['metadata']['song'], album=curSong['metadata']['album'])
         
     if autoBopForOwner and curDjID == ownerID:
         bot.bop() 
@@ -447,7 +450,9 @@ def djSteppedUp(data):
             bot.speak('It would appear that @{} took the DJ spot that was reserved for @{}.'.format(name, firstInQueueName))
             bot.remDj(userID)
     checkIfBotShouldDJ()
-    addUserHistory(con=dbConn, uid=userID, uname=name,action='Hopped on stage')
+    
+    if userID != myUserID:
+        addUserHistory(con=dbConn, uid=userID, uname=name,action='Hopped on stage')
 
 def djSteppedDown(data):
     global roomDJs
@@ -459,7 +464,8 @@ def djSteppedDown(data):
         bot.speak('A DJ spot has opened up. @{} is next in line.'.format(theUsersList[djQueue[0]]['name']))
         #nextDjTimer()
 
-    addUserHistory(con=dbConn, uid=data['user'][0]['userid'], uname=data['user'][0]['name'],action='Left the stage')
+    if data['user'][0]['userid'] != myUserID:
+        addUserHistory(con=dbConn, uid=data['user'][0]['userid'], uname=data['user'][0]['name'],action='Left the stage')
 
 def nextDjTimer():
     nextDjID = djQueue[0]
@@ -485,8 +491,10 @@ def djEscorted(data):
     print 'DJs:', roomDJs
 
     checkIfBotShouldDJ()
-    addUserHistory(con=dbConn, uid=escortedUserID, uname=escortedUser['name'],action='Yanked off stage')
-    addUserHistory(con=dbConn, uid=data['modid'], uname=theUsersList[data['modid']]['name'],action='Escorted someone from stage')
+    
+    if escortedUserID != myUserID:
+        addUserHistory(con=dbConn, uid=escortedUserID, uname=escortedUser['name'],action='Yanked off stage')
+        addUserHistory(con=dbConn, uid=data['modid'], uname=theUsersList[data['modid']]['name'],action='Escorted someone from stage')
 
 def endSong(data):
     #print 'endsong:', roomDJs
@@ -639,8 +647,10 @@ def songSnagged(data):
     print 'Song snagged: ', data
     command = data['command'] #This should always = snagged
     userID = data['userid'] #This will be set to the user who snagged the file
-    addUserHistory(con=dbConn, uid=userID, uname=theUsersList[userID]['name'],action='Snagged a song')
-    addSnagHistory(con=dbConn, uid=userID, sid=curSongID)
+    
+    if userID != myUserID:
+        addUserHistory(con=dbConn, uid=userID, uname=theUsersList[userID]['name'],action='Snagged a song')
+        addSnagHistory(con=dbConn, uid=userID, sid=curSongID)
 
 def newModerator(data):
     global theOpList
