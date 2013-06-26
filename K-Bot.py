@@ -343,7 +343,7 @@ def calculateAwesome(voteType=None, voterUid=None):
     if len(theBopList[curSongID]) == len(theUsersList) and len(theUsersList) >= 5:
         bot.snag()
         bot.speak('I :yellow_heart: this song')
-        bot.playlistAdd(curSongID)
+        #bot.playlistAdd(curSongID)
         bot.becomeFan(curDjID)
 
 
@@ -410,6 +410,8 @@ def newSong(data):
     else:
         addUserHistory(con=dbConn, uid=curDjID, uname=theUsersList[curDjID]['name'],action='Played a song')
         addSongHistory(con=dbConn, sid=curSongID, uid=curDjID, length=curSong['metadata']['length'], artist=curSong['metadata']['artist'], name=curSong['metadata']['song'], album=curSong['metadata']['album'])
+        bot.playlistAdd(curSongID)
+        bot.playlistAll(NextSongInMyQueue)
         
     if autoBopForOwner and curDjID == ownerID:
         bot.bop() 
@@ -535,9 +537,9 @@ def privateMessage(data):
 
         elif message == 'snag':
             bot.pm('adding {} to my default playlist'.format(curSongID),userID)
-            bot.playlistAdd(curSongID)
+            #bot.playlistAdd(curSongID)
             bot.snag()
-            bot.playlistAll(NextSongInMyQueue)
+            #bot.playlistAll(NextSongInMyQueue)
 
         elif message == 'step up':
             bot.addDj()
