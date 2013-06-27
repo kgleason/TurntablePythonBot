@@ -511,7 +511,12 @@ def noSong(data):
     checkIfBotShouldDJ()
 
 def PlaylistToPM(data):
-    print 'playlist:', data['list'][0]['metadata']
+    counter = 0
+    #print 'playlist:', data['list'][0]['metadata']
+    for song in data['list']:
+        #print 'Item {}:{}'.format(counter,song)
+        print '[{}]: {} by {}'.format(counter,song['metadata']['song'],song['metadata']['artist'])
+        counter += 1
     
 def privateMessage(data):
     global curSongID
@@ -562,6 +567,12 @@ def privateMessage(data):
         elif message == 'delete next':
             bot.playlistRemove(0)
             bot.playlistAll(NextSongInMyQueueAloud)
+
+        elif re.match('^pl rm [0-9]',message):
+            plIdx = int(message[6:])
+            bot.playlistRemove(plIdx)
+            bot.pm('Removed the song from my playlist that was in position {}'.format(plIdx),userID)
+            bot.playlistAll(NextSongInMyQueue)
 
         elif re.match('^theme = ', message):
             roomTheme = message[8:]
