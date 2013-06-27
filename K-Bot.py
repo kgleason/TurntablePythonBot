@@ -22,6 +22,7 @@ def roomChanged(data):
     global maxDjCount
     global roomDJs
     global roomOwner
+    global playlistCount
     roomInfo = data['room']
     roomMeta = roomInfo['metadata']
     curDjID = roomMeta['current_dj']
@@ -53,6 +54,7 @@ def roomChanged(data):
     #print 'The new room is {} and it allows {} max DJs'.format(roomInfo['name'],maxDjCount)
     #print 'There are currently {} DJs'.format(roomDJs)
 
+    bot.playlistAll(GetPlaylistCount)
     checkIfBotShouldDJ()
 
 def buildOpList(roomMods):
@@ -404,17 +406,25 @@ def newSong(data):
 
     checkIfBotShouldDJ()
 
+    bot.playlistAll(GetPlaylistCount)
+
     if curDjID == myUserID:
         #print 'My ID is the same as the current DJs'
         bot.playlistAll(NextSongInMyQueue)
     else:
         addUserHistory(con=dbConn, uid=curDjID, uname=theUsersList[curDjID]['name'],action='Played a song')
         addSongHistory(con=dbConn, sid=curSongID, uid=curDjID, length=curSong['metadata']['length'], artist=curSong['metadata']['artist'], name=curSong['metadata']['song'], album=curSong['metadata']['album'])
-        bot.playlistAdd(curSongID)
+        print "Adding the current song to playlist at position".format(playlistCount-1)
+        bot.playlistAdd('default',curSongID,playlistCount-1,callback)
         bot.playlistAll(NextSongInMyQueue)
         
     if autoBopForOwner and curDjID == ownerID:
         bot.bop() 
+
+def GetPlaylistCount(data):
+    global playlistCount
+    playlistCount = len(data['list'])
+    print "There are currently {} songs in the playlist".format(playlistCount)
 
 def NextSongInMyQueue(data):
     nextSongMeta = data['list'][0]['metadata']
@@ -517,6 +527,7 @@ def PlaylistToPM(data):
         #print 'Item {}:{}'.format(counter,song)
         print '[{}]: {} by {}'.format(counter,song['metadata']['song'],song['metadata']['artist'])
         counter += 1
+    print "There are {} songs in the playlist".format(len(data['list']))
     
 def privateMessage(data):
     global curSongID
@@ -693,6 +704,7 @@ def initializeVars():
     global maxDjCount
     global roomTheme
     global dbConn
+    global playlistCount
 
     #empty out the op list
     theOpList = []
