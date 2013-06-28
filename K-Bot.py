@@ -606,6 +606,12 @@ def privateMessage(data):
             removeFromDJQueue(userID=dqUserId,botOp=userID)
             checkDjQueue()
 
+        elif re.match('^escort .*',message):
+            userName = message[7:]
+            print "Escorting {} from the stage".format(userName)
+            userID = getUserIDByName(con=dbConn, uname=seekName)
+            bot.remDj(userID)
+
         else:
             bot.pm('Exsqueeze me? Baking powder?',userID)
 
