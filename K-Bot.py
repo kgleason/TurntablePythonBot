@@ -609,7 +609,7 @@ def privateMessage(data):
         elif re.match('^escort .*',message):
             userName = message[7:]
             print "Escorting {} from the stage".format(userName)
-            userID = getUserIDByName(con=dbConn, uname=seekName)
+            userID = getUserIDByName(con=dbConn, uname=userName)
             bot.remDj(userID)
 
         else:
