@@ -9,6 +9,7 @@ from random import randint
 import json
 import re
 import sqlite3 as sql
+import requests
 
 bot = Bot(myAuthKey, myUserID, defaultRoom)
 
