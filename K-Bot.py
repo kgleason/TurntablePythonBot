@@ -49,7 +49,7 @@ def roomChanged(data):
     buildOpList(roomMods)
 
     bot.modifyLaptop('linux')
-    bot.setAvatar(randint(1,9))
+    bot.setAvatar(randint(1,21))
     #print 'The bot has changed room.'
     #print 'The new room is {} and it allows {} max DJs'.format(roomInfo['name'],maxDjCount)
     #print 'There are currently {} DJs'.format(roomDJs)
@@ -164,7 +164,7 @@ def processCommand(command,userID):
             bot.speak('{} seems to have changed their name to {}'.format(seekName,history[2]))
 
     elif command == 'top lamer':
-        bot.speak("For privacy reasons, TurnTable won\' allow me to track lames by user.")
+        bot.speak("For privacy reasons, TurnTable won\'t allow me to track lames by user.")
 
     elif command == 'top awesomer':
         results = getTopVoter(con=dbConn, voteType='up',ignoreID=myUserID)
@@ -197,6 +197,12 @@ def processCommand(command,userID):
             bot.speak("This song was originally seeded on {} by {}. It has been played {} times, receiving a total of {} awesomes and has been snagged {} times".format(results["firstPlayDate"], results["userName"], results["totalPlays"], results["totalLikes"], results["totalSnags"]))
         else:
             bot.speak("This is the first time that this song has been played since I've been tracking.")
+
+    elif re.match('.*christmas.*',command,re.IGNORECASE):
+        if isItChristmas():
+            bot.speak("According to http://isitchristmas.com, today IS Christmas!!")
+        else:
+            bot.speak("According to http://isitchristmas.com, to is not Christmas. :-(")
     else:
         bot.speak('Hodor!'.format(command))
 
@@ -699,6 +705,11 @@ def getUserStatus(userID):
             bot.pm('You are currently an operator',userID)
         else:
             bot.pm('You, {}, are a valued member of this room'.format(userName),userID)
+
+def isItChristmas():
+    response = requests.get("http://isitchristmas.com/api")
+    data = json.loads(response.content)
+    return data['christmas'].lower() in ['true','1','t']
 
 def initializeVars():
     # Initialize some variables here, mostly things that we need from the get go
