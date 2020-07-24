@@ -1,4 +1,4 @@
-#TurntablePythonBot
+# TurntablePythonBot
 
 A [Turntable.fm](http://turntable.fm) bot written in Python using [ttapi from alaingilbert](https://github.com/alaingilbert/Turntable-API)
 
